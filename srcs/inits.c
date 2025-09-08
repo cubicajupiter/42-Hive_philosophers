@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 // create philos and forks according to N_PHILO (number of philos) in state.
-void	initialize(t_states state)
+void	initialize(t_states *state)
 {
 	t_philo		*philo;
 	t_fork		*fork;
@@ -20,8 +20,19 @@ void	initialize(t_states state)
 	i = 0;
 	while (i < state->data[N_PHILO])
 	{
-		philo = malloc(sizeof(t_philo));
-		fork = malloc(sizeof(t_fork));
+		philo = init_philo(state);
+		fork = init_fork(state);
+		
 		i++;
 	}
+}
+
+t_philo	*init_philo(t_states state)
+{
+	philo = malloc(sizeof(t_philo));
+}
+
+t_fork	*init_fork(t_states state)
+{
+	fork = malloc(sizeof(t_fork));
 }

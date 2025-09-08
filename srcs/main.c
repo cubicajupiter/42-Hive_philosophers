@@ -49,5 +49,5 @@ void	parse_args(int ac, char **av) //insert in struct
 	}
 	if (ac == 5)
 		state->data[i] = 0;
-	return (&state)
+	return (&state);
 }
