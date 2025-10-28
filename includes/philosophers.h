@@ -6,42 +6,27 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:59:46 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/09/12 12:42:06 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/10/28 17:18:02 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PHILOSOPHERS_H
 # define PHILOSOPHERS_H
 
-# include <stdbool.h>
-# include <errno.h>
+#include "defines.h"
 
-# define N_PHILO		0
-# define TO_DIE			1
-# define TO_EAT			2
-# define TO_SLEEP		3
-# define N_EAT			4
-# define SUCCESS		0
+//philosophers.c
+void	clean_exit(t_state *state, int exit_code);
+int		exit_with_instructions(int exit_code);
 
-typedef struct s_states;
-{
-	int					data[5];
-	struct s_fork		**fork_arr;
-	struct s_philo		**philo_arr;
-	int					exit_code;
-}	t_states;
+//parser.c
+void	parse_args(int ac, char **av, t_state *state);
 
-typedef struct s_fork; //DESIGN THESE NEXT!
-{
-	//jotain siit et tama on kaytosa
-	//aina viereiset forkit philolle
-	//niit voi trackailla nii et valitsee philon [i], ja forkit [i] ja [i - 1] tai jtn
-}	t_fork;
+//inits.c
+void	init_state(t_state **state);
+void	initialize(t_state *state);
+int		init_simulation(t_state *state);
+t_philo	*init_philo(t_state *state);
+t_fork	*init_fork(t_state *state);
 
-typedef struct s_philo;
-{
-	bool				is_eating;
-	bool				is_sleeping;
-	bool				is_thinking;
-	bool				is_dead;
-}	t_philo;
+#endif

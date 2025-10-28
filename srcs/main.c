@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:40:23 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/09/12 12:42:04 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/10/28 17:57:36 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,29 +17,39 @@
 
 int	main(int ac, char **av)
 {
-	t_states		*state;
+	t_state			*state;
 
 	if (ac == 5 || ac == 6)
 	{
-		state = parse_args(ac, av);
+		init_state(&state);
+		parse_args(ac, av, &state);
 		initialize(state);
 		run_and_log(state);
-		clean_exit(state); //SET EXIT_CODE TO SUCCESS FOR THIS CALL, IF ALL WORKS OUT WITHOUT ERROR.
+		clean_exit(state, SUCCESS);
 	}
 	else
-	{
-		ft_putendl_fd("Usage: ./philosophers < 4 or 5 additional arguments: >", 1);
-		ft_putendl_fd("< Number: number of philosophers >", 1);
-		ft_putendl_fd("< Number: time to die (ms) >", 1);
-		ft_putendl_fd("< Number: time to eat (ms) >", 1);
-		ft_putendl_fd("< Number: time to sleep (ms) >", 1);
-		ft_putendl_fd("< (Optional) Number: times a philosopher must eat >", 1);
-	}
-	return (EINVAL);
+		if (exit_with_instructions(EINVAL));
 }
 
-void	clean_exit(t_states *state, int exit_code);
+void	clean_exit(t_state *state, int exit_code)
 {
-	free();
+	free(); //free everything.
+	printf("Philosphers exiting with exit code: %d\n", exit_code);
 	exit(exit_code); //exit value
+}
+
+int	exit_with_instructions(int exit_code)
+{
+	size_t		bytes;
+
+	bytes = printf("%s%s%s%s%s%s", \
+"Usage: ./philosophers <following arguments>\n", \
+"<Integer: number of philosophers>\n", \
+"<Integer: time to die (ms)>\n", \
+"<Integer: time to eat (ms)>\n", \
+"<Integer: time to sleep (ms)>\n", \
+"<(Optional) Integer: times a philosopher must eat>\n");
+	if (bytes < 0)
+		exit(EIO);
+	exit(exit_code);
 }

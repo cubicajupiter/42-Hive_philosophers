@@ -6,27 +6,29 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 12:23:49 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/09/12 12:42:05 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/10/28 17:57:09 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
 // create philos and forks according to N_PHILO (number of philos) in state.
-void	initialize(t_states *state)
+void	init_state(t_state **state)
 {
-	ft_memset(state, 0, sizeof(*state));
-	state->philo_arr = malloc(state->data[N_PHILO] * sizeof(t_philo *));
-	if (!state->philo_arr)
-	{
-		state->exit_code = ENOMEM;
-		clean_exit(state);
-	}
-	if (init_simulation(state))
-		clean_exit(state);
+	*state = malloc(sizeof(t_state));
 }
 
-int	init_simulation(t_states *state)
+void	initialize(t_state *state)
+{
+	state->philo_arr = malloc(state->data[N_PHILO] * sizeof(t_philo *));
+	state->fork_arr = malloc(state->data[N_PHILO] * sizeof(t_fork *));
+	if (!state->philo_arr || !state->fork_arr)
+		clean_exit(state, ENOMEM);
+	if (init_simulation(state))
+		clean_exit(state, ENOMEM);
+}
+
+int	init_simulation(t_state *state)
 {
 	t_philo		*philo;
 	t_fork		*fork;
@@ -38,7 +40,7 @@ int	init_simulation(t_states *state)
 		philo = init_philo(state);
 		fork = init_fork(state);
 		if (!philo || !fork)
-			return (state->exit_code);
+			return (ERROR);
 		state->philo_arr[i] = philo;
 		state->fork_arr[i] = fork;
 		i++;
@@ -46,7 +48,7 @@ int	init_simulation(t_states *state)
 	return (SUCCESS);
 }
 
-t_philo	*init_philo(t_states *state)
+t_philo	*init_philo(t_state *state)
 {
 	t_philo		*philo;
 
@@ -57,7 +59,7 @@ t_philo	*init_philo(t_states *state)
 	return (philo);
 }
 
-t_fork	*init_fork(t_states *state)
+t_fork	*init_fork(t_state *state)
 {
 	t_fork		*fork;
 

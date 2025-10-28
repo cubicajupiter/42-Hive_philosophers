@@ -6,26 +6,40 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 10:28:09 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/09/12 12:42:03 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/10/28 17:57:34 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philosopers.h"
+#include "philosophers.h"
 
-void	parse_args(int ac, char **av) //insert in struct
+void	parse_args(int ac, char **av, t_state **state)
 {
-	t_states	state;
 	int			data;
-	int			i;
+	size_t		i;
 
 	i = 0;
 	while (i < ac)
 	{
+		if (screen_arg(av[i]) == EINVAL)
+			exit_with_instructions(EINVAL);
 		data = ft_atoi(av[i]);
-		state->data[i] = data;
+		(*state)->data[i] = data;
 		i++;
 	}
 	if (ac == 5)
-		state->data[i] = 0;
-	return (&state);
+		(*state)->data[i] = -1;
+}
+
+int	screen_arg(char *arg)
+{
+	size_t		i;
+
+	i = 0;
+	while(arg[i])
+	{
+		if (!ft_isdigit(arg[i]))
+			return (EINVAL);
+		i++;
+	}
+	return (SUCCESS);
 }
