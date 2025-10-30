@@ -6,14 +6,11 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:40:23 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/10/28 17:57:36 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/10/30 16:13:33 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
-
-//TILANNE:
-//design the T_FORK struct members next!!!!!!!!!!!!!
 
 int	main(int ac, char **av)
 {
@@ -33,7 +30,7 @@ int	main(int ac, char **av)
 
 void	clean_exit(t_state *state, int exit_code)
 {
-	free(); //free everything.
+	free(); //free everything. Carry everything in state.
 	printf("Philosphers exiting with exit code: %d\n", exit_code);
 	exit(exit_code); //exit value
 }

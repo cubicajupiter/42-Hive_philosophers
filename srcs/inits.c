@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 12:23:49 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/10/28 17:57:09 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/10/30 16:13:29 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,8 @@ t_fork	*init_fork(t_state *state)
 	fork = malloc(sizeof(t_fork));
 	if (!fork)
 		return (NULL);
-	ft_memset(fork, 0, sizeof(*fork)); //actually make sure the members should be zeroed as you design the members
+	ft_memset(fork, 0, sizeof(*fork));
 	return (fork);
 }
+
+

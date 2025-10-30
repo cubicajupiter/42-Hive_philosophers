@@ -16,26 +16,39 @@
 # define ERROR			-1
 # define SUCCESS		0
 
-typedef struct s_state
-{
-	int					data[5];
-	struct s_fork		**fork_arr;
-	struct s_philo		**philo_arr;
-}	t_state;
+typedef struct s_state		t_state;
+typedef struct s_fork		t_fork;
+typedef struct s_philo		t_philo;
 
-typedef struct s_fork //DESIGN THESE NEXT!
-{
-	//jotain siit et tama on kaytosa
-	//aina viereiset forkit philolle
-	//niit voi trackailla nii et valitsee philon [i], ja forkit [i] ja [i - 1] tai jtn
-}	t_fork;
+typedef enum e_status		t_status;
 
-typedef struct s_philo
+enum e_status
 {
-	bool				is_eating;
-	bool				is_sleeping;
-	bool				is_thinking;
-	bool				is_dead;
-}	t_philo;
+	EATING,
+	SLEEPING,
+	THINKING,
+	FORK,
+	DEAD
+};
+
+struct s_state
+{
+	suseconds_t		init_time;
+	int				data[5];
+	t_fork			**fork_arr;
+	t_philo			**philo_arr;
+};
+
+struct s_fork
+{
+	pthread_mutex_t		*mutex;
+};
+
+struct s_philo
+{
+	int				no;
+	pthread_t		thread;
+	t_status		status;
+};
 
 #endif
