@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 12:23:49 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/10/30 16:13:29 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/10/31 17:14:09 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ void	init_state(t_state **state)
 
 void	initialize(t_state *state)
 {
-	state->philo_arr = malloc(state->data[N_PHILO] * sizeof(t_philo *));
-	state->fork_arr = malloc(state->data[N_PHILO] * sizeof(t_fork *));
-	if (!state->philo_arr || !state->fork_arr)
+	state->philos = malloc(state->data[N_PHILO] * sizeof(t_philo *));
+	state->forks = malloc(state->data[N_PHILO] * sizeof(pthread_mutex_t *));
+	if (!state->philos)
 		clean_exit(state, ENOMEM);
 	if (init_simulation(state))
 		clean_exit(state, ENOMEM);
@@ -30,19 +30,20 @@ void	initialize(t_state *state)
 
 int	init_simulation(t_state *state)
 {
-	t_philo		*philo;
-	t_fork		*fork;
-	int			i;
+	t_philo				*philo;
+	pthread_mutex_t		*fork;
+	int					i;
 
 	i = 0;
 	while (i < state->data[N_PHILO])
 	{
 		philo = init_philo(state);
-		fork = init_fork(state);
-		if (!philo || !fork)
+		if (!philo)
 			return (ERROR);
-		state->philo_arr[i] = philo;
-		state->fork_arr[i] = fork;
+		if (pthread_mutex_init(fork, NULL))
+			return (ERROR);
+		state->philos[i] = *philo;
+		state->forks[i] = *fork;
 		i++;
 	}
 	return (SUCCESS);
@@ -50,7 +51,7 @@ int	init_simulation(t_state *state)
 
 t_philo	*init_philo(t_state *state)
 {
-	t_philo		*philo;
+	t_philo			*philo;
 
 	philo = malloc(sizeof(t_philo));
 	if (!philo)
@@ -58,16 +59,3 @@ t_philo	*init_philo(t_state *state)
 	ft_memset(philo, 0, sizeof(*philo));
 	return (philo);
 }
-
-t_fork	*init_fork(t_state *state)
-{
-	t_fork		*fork;
-
-	fork = malloc(sizeof(t_fork));
-	if (!fork)
-		return (NULL);
-	ft_memset(fork, 0, sizeof(*fork));
-	return (fork);
-}
-
-

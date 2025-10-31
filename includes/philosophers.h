@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:59:46 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/10/30 16:13:21 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/10/31 17:14:11 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,8 @@ t_philo		*init_philo(t_state *state);
 t_fork		*init_fork(t_state *state);
 
 //logs.c
-int			try_write_log(t_philo *philo);
+int			write_log(t_philo *philo);
+void		get_time(t_state *state, suseconds_t *time);
 
 //run_sim.c
 void		run_and_log(t_state *state);

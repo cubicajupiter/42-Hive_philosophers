@@ -33,22 +33,17 @@ enum e_status
 
 struct s_state
 {
-	suseconds_t		init_time;
-	int				data[5];
-	t_fork			**fork_arr;
-	t_philo			**philo_arr;
-};
-
-struct s_fork
-{
-	pthread_mutex_t		*mutex;
+	suseconds_t			init_time;
+	int					data[5];
+	t_philo				*philos;
+	pthread_mutex_t		*forks;
 };
 
 struct s_philo
 {
-	int				no;
-	pthread_t		thread;
-	t_status		status;
+	int					no;
+	t_status			status;
+	t_state				*state;
 };
 
 #endif
