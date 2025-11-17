@@ -1,0 +1,7 @@
+{
+	"files.associations": {
+		"philosophers.h": "c",
+		"stdatomic.h": "c",
+		"defines.h": "c"
+	}
+}

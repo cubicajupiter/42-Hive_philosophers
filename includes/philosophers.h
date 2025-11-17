@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:59:46 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/10/31 17:14:11 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/17 15:58:58 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,10 @@
 # define PHILOSOPHERS_H
 
 # include "defines.h"
+# include <stdbool.h>
+# include <stdatomic.h>
+# include <errno.h>
+# include <stdio.h>
 # include <stdarg.h>
 # include <sys/time.h>
 # include <pthread.h>
@@ -38,5 +42,8 @@ void		get_time(t_state *state, suseconds_t *time);
 
 //run_sim.c
 void		run_and_log(t_state *state);
+
+//routines.c
+void		*p_task_scheduler(void *arg);
 
 #endif

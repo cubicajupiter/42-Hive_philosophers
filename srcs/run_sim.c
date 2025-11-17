@@ -1,63 +1,67 @@
 #include "philosophers.h"
 
-void	*proutine(void *state);
-
-// HOW TO CLEAN?
-//MAYBE: there needs to be a flag accessible by all that is set to true when somebody dies and detaches,
-// each thread would regularly check the flag
-// if a thread sees that flag is true, they return, to be joined by main thread.
-
-//
+static inline void	dispatcher(t_state *state, pthread_t *threads);
+static int			waiter(t_state *state, const pthread_t *threads);
+static inline void	joiner(t_state *state, pthread_t *threads);
 
 void	run_and_log(t_state *state)
 {
-	pthread_t		threads[state->data[N_PHILO]];
+	pthread_t		threads[state->init_data[N_PHILO]];
 
-	get_time(state, &state->init_time);
-	thread_launcher(state, threads);
-	thread_joiner(state, threads);
-	//what else
+	dispatcher(state, threads);
+	waiter(state, threads);
+	joiner(state, threads);
 }
 
-void	thread_launcher(t_state *state, pthread_t *threads)
+static inline void	dispatcher(t_state *state, pthread_t *threads)
 {
 	int				i;
 
 	i = 0;
-	while (i < state->data[N_PHILO])
+	while (i < state->init_data[N_PHILO])
 	{
-		state->philos[i].no = i + 1;
-		state->philos[i].state = state;
-		state->philos[i].status = THINKING;
-		pthread_create(&threads[i], NULL, proutine, &state->philos[i]);
+		state->philos[i]->no = i + 1;
+		state->philos[i]->vitals = THINKING;
+		state->philos[i]->run_sim = &state->run_sim;
+		pthread_create(&threads[i], NULL, p_task_scheduler, &state->philos[i]);
 		i++;
 	}
 }
 
-void	thread_joiner(t_state *state, pthread_t *threads)
+static int	waiter(t_state *state, const pthread_t *threads)
 {
-	int				i;
+	int				no;
+	const t_philo	**philos;
+	atomic_bool		*run_sim;
+
+	run_sim = &state->run_sim;
+	philos = state->philos;
+	state->init_time = get_time(0);
+	*run_sim = true;
+	while (*run_sim)
+	{
+		no = 0;
+		while (philos[no] && *run_sim)
+		{
+			if (!philos[no]->vitals)
+				*run_sim = false;
+			no++;
+		}
+		put_batch();
+	}
+}
+
+static inline void	joiner(const t_state *state, pthread_t *threads)
+{
+	int			i;
+	void		*retval;
 
 	i = 0;
-	while (i < state->data[N_PHILO])
+	while (i < state->init_data[N_PHILO])
 	{
-		pthread_join();
+		pthread_join(threads[i], &retval);
+		i++;
 	}
 }
 
-void	*proutine(void *arg)
-{
-	t_philo 	*philo;
 
-	philo = (t_philo *) arg;
-	while (1)
-	{
-		if (philo->no % 2 == 0)
-			eat(philo, philo->state->data[TTO_EAT]);
-			sleep(philo, philo->state->data[TTO_SLEEP]);
-		else
-			sleep(philo, philo->state->data[TTO_SLEEP]);
-			eat(philo, philo->state->data[TTO_EAT]);
-	}
-	return (NULL); //RIP
-}

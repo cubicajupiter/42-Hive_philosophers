@@ -23,11 +23,11 @@ void	parse_args(int ac, char **av, t_state **state)
 		if (screen_arg(av[i]) == EINVAL)
 			exit_with_instructions(EINVAL);
 		data = ft_atoi(av[i]);
-		(*state)->data[i] = data;
+		(*state)->init_data[i] = data;
 		i++;
 	}
 	if (ac == 5)
-		(*state)->data[i] = -1;
+		(*state)->init_data[i] = -1;
 }
 
 int	screen_arg(char *arg)

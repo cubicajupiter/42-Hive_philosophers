@@ -1,10 +1,6 @@
 #ifndef DEFINES_H
 # define DEFINES_H
 
-# include <stdbool.h>
-# include <errno.h>
-# include <stdio.h>
-
 //STATE CONSTANTS
 # define N_PHILO		0
 # define TTO_DIE		1
@@ -24,26 +20,28 @@ typedef enum e_status		t_status;
 
 enum e_status
 {
+	DEAD,
 	EATING,
 	SLEEPING,
 	THINKING,
-	FORK,
-	DEAD
 };
 
 struct s_state
 {
-	suseconds_t			init_time;
-	int					data[5];
-	t_philo				*philos;
+	const suseconds_t	init_time;
+	const int			init_data[5];
+	t_philo				**philos;
 	pthread_mutex_t		*forks;
+	atomic_bool			run_sim;
 };
 
 struct s_philo
 {
 	int					no;
-	t_status			status;
-	t_state				*state;
+	int					init_data[5];
+	int					n_eaten;
+	t_status			vitals;
+	atomic_bool			*run_sim;
 };
 
 #endif

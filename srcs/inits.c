@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 12:23:49 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/10/31 17:14:09 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/06 15:26:16 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,14 @@
 void	init_state(t_state **state)
 {
 	*state = malloc(sizeof(t_state));
+	*state->run_sim = false;
 }
 
 void	initialize(t_state *state)
 {
-	state->philos = malloc(state->data[N_PHILO] * sizeof(t_philo *));
-	state->forks = malloc(state->data[N_PHILO] * sizeof(pthread_mutex_t *));
+	state->philos = malloc((state->init_data[N_PHILO] + 1) * sizeof(t_philo *));
+	state->forks = malloc(\
+state->init_data[N_PHILO] * sizeof(pthread_mutex_t *));
 	if (!state->philos)
 		clean_exit(state, ENOMEM);
 	if (init_simulation(state))
@@ -35,17 +37,18 @@ int	init_simulation(t_state *state)
 	int					i;
 
 	i = 0;
-	while (i < state->data[N_PHILO])
+	while (i < state->init_data[N_PHILO])
 	{
 		philo = init_philo(state);
 		if (!philo)
 			return (ERROR);
 		if (pthread_mutex_init(fork, NULL))
 			return (ERROR);
-		state->philos[i] = *philo;
+		*state->philos[i] = *philo;
 		state->forks[i] = *fork;
 		i++;
 	}
+	state->philos[i] = NULL;
 	return (SUCCESS);
 }
 
