@@ -2,6 +2,7 @@
 	"files.associations": {
 		"philosophers.h": "c",
 		"stdatomic.h": "c",
-		"defines.h": "c"
+		"defines.h": "c",
+		"stdio.h": "c"
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:59:46 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/17 15:58:58 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/18 18:33:29 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,35 +15,35 @@
 
 # include "defines.h"
 # include <stdbool.h>
-# include <stdatomic.h>
 # include <errno.h>
 # include <stdio.h>
 # include <stdarg.h>
-# include <sys/time.h>
-# include <pthread.h>
+# include <stdlib.h>
+# include <string.h>
+# include <limits.h>
+# include <unistd.h>
 
 //main.c
-void		clean_exit(t_state *state, int exit_code);
-int			exit_with_instructions(int exit_code);
+void				clean_exit(t_state *state, int exit_code);
+void				exit_with_instructions(const int exit_code);
 
 //parser.c
-void		parse_args(int ac, char **av, t_state *state);
+void				parse_args(int ac, char **av, t_state **state);
 
 //inits.c
-void		init_state(t_state **state);
-void		initialize(t_state *state);
-int			init_simulation(t_state *state);
-t_philo		*init_philo(t_state *state);
-t_fork		*init_fork(t_state *state);
+void				init_state(t_state **state);
+void				initialize(t_state *state);
+int					init_simulation(t_state *state);
 
 //logs.c
-int			write_log(t_philo *philo);
-void		get_time(t_state *state, suseconds_t *time);
+int					write_log(t_philo *philo);
+//inline suseconds_t	get_time(const suseconds_t init_time);
 
 //run_sim.c
-void		run_and_log(t_state *state);
+void				run_and_log(t_state *state);
+inline suseconds_t	get_time(const suseconds_t init_time); //temp here
 
 //routines.c
-void		*p_task_scheduler(void *arg);
+void				*p_dining_routine(void *arg);
 
 #endif

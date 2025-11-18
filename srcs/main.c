@@ -6,11 +6,13 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:40:23 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/10/31 17:14:14 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/18 16:11:23 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
+
+void	exit_with_instructions(const int exit_code);
 
 int	main(int ac, char **av)
 {
@@ -25,27 +27,27 @@ int	main(int ac, char **av)
 		clean_exit(state, SUCCESS);
 	}
 	else
-		if (exit_with_instructions(EINVAL));
+		exit_with_instructions(EINVAL);
 }
 
 void	clean_exit(t_state *state, int exit_code)
 {
-	free(); //free everything. Carry everything in state.
+	free(state); //separately free everything in state that was mallocd
 	printf("Philosphers exiting with exit code: %d\n", exit_code);
 	exit(exit_code); //exit value
 }
 
-int	exit_with_instructions(int exit_code)
+void	exit_with_instructions(const int exit_code)
 {
 	size_t		bytes;
 
 	bytes = printf("%s%s%s%s%s%s", \
 "Usage: ./philosophers <following arguments>\n", \
-"<Integer: number of philosophers>\n", \
-"<Integer: time to die (ms)>\n", \
-"<Integer: time to eat (ms)>\n", \
-"<Integer: time to sleep (ms)>\n", \
-"<(Optional) Integer: times a philosopher must eat>\n");
+"<Unsigned int: number of philosophers>\n", \
+"<Unsigned int: time to die (ms)>\n", \
+"<Unsigned int: time to eat (ms)>\n", \
+"<Unsigned int: time to sleep (ms)>\n", \
+"<(Optional) Unsigned int: times a philosopher must eat>\n");
 	if (bytes < 0)
 		exit(EIO);
 	exit(exit_code);

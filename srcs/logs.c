@@ -6,15 +6,25 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/27 14:22:14 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/17 15:58:50 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/18 16:11:09 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+//these might be useful:
+//The philos prolly shouldn't do extra work like logging, since their
+//time_to is counted by usleep() so additional logging will add extra time
+//on top of the time_to so their actions end up being too long
+
+//still, i dont see how a log queue is more performant,
+//since using it takes mutex_lock & unlock operations each time from each thread
+
+/*
 inline void	queue(const t_philo *philo, const suseconds_t ts)
 {
-	static char		**queue[1024];
+	static char		item[];
+	static char		**item_queue[1024];
 
 	if (state.run_sim == true)
 	{
@@ -24,42 +34,55 @@ inline void	queue(const t_philo *philo, const suseconds_t ts)
 
 void	merge_batch(char **batch, size_t *len)
 {
-	static const char	*status[3] = {"eating", "sleeping", "thinking"};
+	static const char	*status[3] = {"is eating", "is sleeping", "is thinking"};
 
 	while (state->run_sim == true && *batch)
 	{
 		if (vitals == THINKING || vitals == SLEEPING || vitals == EATING)
-			ts + no + "is" + status[vitals];
+			ts + no + status[vitals];
 		else if (!vitals)
 		{
 			ts + no + "died";
 			run_sim == false;
 		}
+		'\n'
 	}
 }
 
 void	put_batch(t_state *state)
 {
 	size_t				len;
-	char				*batch;
+	char				batch[1000000];
 
 	len = 0;
 	merge_batch(&batch, &len);
 	write(1, batch, len);
 }
+*/
 
-static inline int	log_vitals(t_philo *philo)
+static inline void	log_vitals(t_philo *philo)
 {
-	size_t			bytes;
-	t_status		vitals;
-	suseconds_t		ts;
+	static const char	*status[3] = {"is eating", "is sleeping", "is thinking"};
+	size_t				bytes;
+	t_status			vitals;
+	suseconds_t			ts;
 
 	vitals = philo->vitals;
 	get_time(philo->state, &ts);
 	ts -= philo->state->init_time;
+	while (state->run_sim == true && *batch)
+	{
+		if (!vitals)
+		{
+			printf("%d %d %s\n", ts, no, "died");
+			run_sim == false;
+		}
+		else
+			printf("%d %d %s\n", ts, no, status[vitals]);
+	}
 }
 
-int	log_fork(t_philo *philo)
+static inline void	log_fork(t_philo *philo)
 {
 	size_t			bytes;
 	suseconds_t		ts;
