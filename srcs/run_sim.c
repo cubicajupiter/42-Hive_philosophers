@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:50 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/18 18:33:34 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/18 18:38:20 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,19 +70,17 @@ static void	waiter(t_state *state)
 {
 	int				no;
 	t_philo			**philos;
-	atomic_bool		*run_sim;
 
-	run_sim = &state->run_sim;
 	philos = state->philos;
 	//state->init_time = get_time(0); will be needed here for queue design
-	*run_sim = true;
-	while (*run_sim)
+	state->run_sim = true;
+	while (state->run_sim)
 	{
 		no = 0;
-		while (philos[no] && *run_sim)
+		while (philos[no] && state->run_sim)
 		{
 			if (!philos[no]->vitals)
-				*run_sim = false;
+				state->run_sim = false;
 			no++;
 		}
 		//put_batch(); figure out logging...
