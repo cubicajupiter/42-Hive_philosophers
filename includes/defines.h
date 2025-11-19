@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:13:11 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/18 18:32:26 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/19 16:19:04 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <sys/time.h>
 # include <pthread.h>
 # include <stdatomic.h>
+# include <stdint.h>
 
 //STATE CONSTANTS
 # define N_PHILO		0
@@ -45,7 +46,7 @@ enum e_status
 
 struct s_state
 {
-	suseconds_t			init_time;
+	uint64_t			init_time;
 	int					init_data[5];
 	t_philo				**philos;
 	pthread_mutex_t		*forks;
@@ -57,7 +58,7 @@ struct s_philo
 	int					no;
 	int					init_data[5];
 	t_status			vitals; //could be just local in routine.
-	suseconds_t			init_time;
+	uint64_t			init_time;
 	atomic_bool			*run_sim;
 	pthread_mutex_t		*own_fork;
 	pthread_mutex_t		*next_fork;

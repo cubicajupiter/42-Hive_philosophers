@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 12:23:49 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/18 18:33:37 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/19 16:25:20 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ static pthread_mutex_t	*init_fork(void)
 	pthread_mutex_t		*fork;
 
 	fork = malloc(sizeof(pthread_mutex_t));
-	fork = memset(fork, 0, sizeof(pthread_mutex_t));
+	//fork = memset(fork, 0, sizeof(pthread_mutex_t));
 	if (!fork)
 		return (NULL);
 	if (pthread_mutex_init(fork, NULL))

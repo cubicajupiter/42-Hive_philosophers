@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:59:46 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/18 18:33:29 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/19 16:20:48 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,10 @@ int					init_simulation(t_state *state);
 
 //logs.c
 int					write_log(t_philo *philo);
-//inline suseconds_t	get_time(const suseconds_t init_time);
 
 //run_sim.c
 void				run_and_log(t_state *state);
-inline suseconds_t	get_time(const suseconds_t init_time); //temp here
+uint64_t			get_time(const uint64_t init_time); //temp here
 
 //routines.c
 void				*p_dining_routine(void *arg);

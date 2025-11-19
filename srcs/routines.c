@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:45 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/18 18:36:47 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/19 16:47:59 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,14 @@
 
 static inline void	ph_eat(t_philo *philo, const int tto, int *n_eaten);
 static inline void	ph_sleep(t_philo *philo, const int tto);
-static inline void	log_v(char *vitals, t_philo *philo, const suseconds_t ts);
-static inline void	log_fork(t_philo *philo, const suseconds_t ts);
+static inline void	log_v(char *vitals, t_philo *philo, const unsigned long ts);
+static inline void	log_fork(t_philo *philo, const unsigned long ts);
 
 void	*p_dining_routine(void *arg)
 {
 	const int		*data;
 	t_philo 		*philo;
 	int				n_eaten;
-	//t_status		vitals; vitals could be just local instead of struct memb
 
 	n_eaten = 0;
 	philo = (t_philo *) arg;
@@ -41,6 +40,8 @@ void	*p_dining_routine(void *arg)
 			ph_sleep(philo, data[TTO_SLEEP]);
 			ph_eat(philo, data[TTO_EAT], &n_eaten);
 		}
+		philo->vitals = THINKING;
+		log_v("is thinking", philo, philo->init_time);
 		if (TTO_EAT)
 			philo->vitals = DEAD;
 		if (philo->vitals == DEAD)
@@ -52,11 +53,11 @@ void	*p_dining_routine(void *arg)
 
 static inline void	ph_eat(t_philo *philo, const int tto, int *n_eaten)
 {
-	suseconds_t					timestamp;
+	uint64_t			timestamp;
 
-	timestamp = get_time(philo->init_time);
 	pthread_mutex_lock(philo->own_fork);
 	pthread_mutex_lock(philo->next_fork);
+	timestamp = get_time(philo->init_time);
 	log_fork(philo, timestamp);
 	philo->vitals = EATING;
 	log_v("is eating", philo, timestamp);
@@ -68,17 +69,15 @@ static inline void	ph_eat(t_philo *philo, const int tto, int *n_eaten)
 
 static inline void	ph_sleep(t_philo *philo, const int tto)
 {
-	static suseconds_t			init_time;
-	suseconds_t					timestamp;
+	uint64_t				timestamp;
 
-	init_time = philo->init_time;
-	timestamp = get_time(init_time);
+	timestamp = get_time(philo->init_time);
 	philo->vitals = SLEEPING;
 	log_v("is sleeping", philo, timestamp);
 	usleep(tto);
 }
 
-static inline void	log_v(char *vitals, t_philo *philo, const suseconds_t ts)
+static inline void	log_v(char *vitals, t_philo *philo, const uint64_t ts)
 {
 	while (*philo->run_sim == true)
 	{
@@ -95,23 +94,8 @@ static inline void	log_v(char *vitals, t_philo *philo, const suseconds_t ts)
 	}
 }
 
-static inline void	log_fork(t_philo *philo, const suseconds_t ts)
+static inline void	log_fork(t_philo *philo, const uint64_t ts)
 {
 	if (printf("%ld %d has taken a fork\n", ts, philo->no) == -1)
 		write(1, "EIO: printf failed\n", 19);
-}
-
-inline suseconds_t	get_time(const suseconds_t init_time)
-{
-	struct timeval		tv;
-	suseconds_t			time;
-
-	gettimeofday(&tv, NULL);
-	time = tv.tv_usec;
-	if (init_time)
-	{
-		time -= init_time;
-		return (time);
-	}
-	return (time);
 }
