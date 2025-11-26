@@ -6,96 +6,83 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:45 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/19 16:47:59 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/25 14:50:45 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-static inline void	ph_eat(t_philo *philo, const int tto, int *n_eaten);
-static inline void	ph_sleep(t_philo *philo, const int tto);
-static inline void	log_v(char *vitals, t_philo *philo, const unsigned long ts);
-static inline void	log_fork(t_philo *philo, const unsigned long ts);
-
-void	*p_dining_routine(void *arg)
+void	*dine(void *arg)
 {
-	const int		*data;
 	t_philo 		*philo;
 	int				n_eaten;
 
 	n_eaten = 0;
-	philo = (t_philo *) arg;
-	data = philo->init_data;
-	while (!*philo->run_sim)
-		;
-	while (*philo->run_sim == true)
+	philo = (t_philo *)arg;
+	printf("no: %d, is_running: %d and its ptr: %p, mutex[SIM] ptr: %p\n", philo->no, *philo->is_running, philo->is_running, philo->mutex[SIM]);
+	while (!mt_boolean_load(philo->is_running, philo->mutex[SIM]))
 	{
-		if (philo->no % 2 == 0)
-		{
-			ph_eat(philo, data[TTO_EAT], &n_eaten);
-			ph_sleep(philo, data[TTO_SLEEP]);
-		}
-		else
-		{
-			ph_sleep(philo, data[TTO_SLEEP]);
-			ph_eat(philo, data[TTO_EAT], &n_eaten);
-		}
-		philo->vitals = THINKING;
-		log_v("is thinking", philo, philo->init_time);
-		if (TTO_EAT)
-			philo->vitals = DEAD;
-		if (philo->vitals == DEAD)
+		usleep(50);
+	}
+	printf("flag given\n");
+	if (philo->init_data[N_EAT] == 0)
+		return (NULL);
+	if (philo->init_data[N_PHILO] == 1)
+		return (solo(philo));
+	while (mt_boolean_load(philo->is_running, philo->mutex[SIM]))
+	{
+		if (philo->no % 2 == 1)
+			usleep(50);
+		ph_eat(philo, philo->init_data[TTO_EAT], &n_eaten);
+		if (n_eaten == philo->init_data[N_EAT])
 			break ;
+		ph_sleep(philo, philo->init_data[TTO_SLEEP]);
+		ph_think(philo);
 	}
 	return (NULL);
-
 }
 
-static inline void	ph_eat(t_philo *philo, const int tto, int *n_eaten)
+void	*solo(t_philo *philo)
 {
 	uint64_t			timestamp;
 
-	pthread_mutex_lock(philo->own_fork);
-	pthread_mutex_lock(philo->next_fork);
-	timestamp = get_time(philo->init_time);
-	log_fork(philo, timestamp);
+	timestamp = get_time(*philo->init_time);
+	pthread_mutex_lock(philo->mutex[OWN_FORK]);
+	printf("%ld %d %s\n", timestamp, philo->no, "picked up a fork\n");
+	usleep(philo->init_data[TTO_DIE] * 1000);
+	timestamp = get_time(*philo->init_time);
+	printf("%ld %d %s\n", timestamp, philo->no, "has died\n");
+	return (NULL);
+}
+
+void	ph_eat(t_philo *philo, const int tto, int *n_eaten)
+{
+	uint64_t			timestamp;
+
+	mt_lock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK], philo);
+	timestamp = get_time(*philo->init_time);
 	philo->vitals = EATING;
-	log_v("is eating", philo, timestamp);
-	usleep(tto);
-	pthread_mutex_unlock(philo->own_fork);
-	pthread_mutex_unlock(philo->next_fork);
-	n_eaten++;
+	mt_putlog(timestamp, philo->no, "is eating\n", philo->mutex[LOG]);
+	usleep(tto * 1000);
+	mt_unlock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK]);
+	(*n_eaten)++;
 }
 
-static inline void	ph_sleep(t_philo *philo, const int tto)
+void	ph_sleep(t_philo *philo, const int tto)
 {
-	uint64_t				timestamp;
+	uint64_t			timestamp;
 
-	timestamp = get_time(philo->init_time);
+	timestamp = get_time(*philo->init_time);
 	philo->vitals = SLEEPING;
-	log_v("is sleeping", philo, timestamp);
-	usleep(tto);
+	mt_putlog(timestamp, philo->no, "is sleeping\n", philo->mutex[LOG]);
+	usleep(tto * 1000);
 }
 
-static inline void	log_v(char *vitals, t_philo *philo, const uint64_t ts)
+void	ph_think(t_philo *philo)
 {
-	while (*philo->run_sim == true)
-	{
-		if (!vitals)
-		{
-			if (printf("%ld %d %s\n", ts, philo->no, "died") == -1)
-				write(1, "EIO: printf failed\n", 19);
-		}
-		else
-		{
-			if (printf("%ld %d %s\n", ts, philo->no, vitals) == -1)
-				write(1, "EIO: printf failed\n", 19);
-		}
-	}
-}
+	uint64_t			timestamp;
 
-static inline void	log_fork(t_philo *philo, const uint64_t ts)
-{
-	if (printf("%ld %d has taken a fork\n", ts, philo->no) == -1)
-		write(1, "EIO: printf failed\n", 19);
+	timestamp = get_time(*philo->init_time);
+	philo->vitals = THINKING;
+	mt_putlog(timestamp, philo->no, "is thinking\n", philo->mutex[LOG]);
 }

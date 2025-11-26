@@ -6,23 +6,21 @@
 #    By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/11/18 12:06:00 by jvalkama          #+#    #+#              #
-#    Updated: 2025/11/18 17:13:40 by jvalkama         ###   ########.fr        #
+#    Updated: 2025/11/20 17:13:17 by jvalkama         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME			:=philosophers
-
-BUILD_TYPE		:=RELEASE
+NAME			:=philo
 
 SRCDIR			:=srcs
 VPATH			:=$(SRCDIR)
-SRCS			:=main.c inits.c parser.c run_sim.c routines.c #logs.c
+SRCS			:=main.c inits.c parser.c run_sim.c routines.c waiter.c mutex.c
 
 OBJDIR			:=objs
 OBJS			:=$(addprefix $(OBJDIR)/, $(SRCS:.c=.o))
 
 COMPILER		:=cc
-CFLAGS			:=-Wall -Wextra -Werror -O3 -march=native -D DEBUG -g
+CFLAGS			:=-Wall -Wextra -Werror -g -pthread #-O3 -march=native
 
 INC_DIR			:=includes
 INCLUDES		:=-I $(INC_DIR)
@@ -30,6 +28,7 @@ INCLUDES		:=-I $(INC_DIR)
 HEADER			:=$(INC_DIR)/philosophers.h
 
 RM				:=rm -f
+
 
 all:				$(NAME)
 

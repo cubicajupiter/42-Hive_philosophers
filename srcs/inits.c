@@ -6,73 +6,72 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 12:23:49 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/19 16:25:20 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/20 16:35:16 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-static t_philo	*init_philo(void);
-static pthread_mutex_t	*init_fork(void);
-
-void	init_state(t_state **state)
+void	initialize(int ac, char **av, t_state **state)
 {
 	*state = malloc(sizeof(t_state));
-	(*state)->run_sim = false;
+	if (!*state)
+		exit(MAL_ERR);
+	init_parsed_args(ac, av, *state);
+	init_state(*state);
+	init_philos(*state);
+	init_mutexes(*state);
 }
 
-void	initialize(t_state *state)
+void	init_state(t_state *state)
 {
-	state->philos = malloc((state->init_data[N_PHILO] + 1) * sizeof(t_philo *));
+	state->is_running = malloc(sizeof(bool));
+	*state->is_running = false;
+	state->init_time = malloc(sizeof(uint64_t));
+	state->philos = malloc((state->init_data[N_PHILO]) * sizeof(t_philo));
 	state->forks = malloc(\
-state->init_data[N_PHILO] * sizeof(pthread_mutex_t *));
-	if (!state->philos)
-		clean_exit(state, ENOMEM);
-	if (init_simulation(state))
-		clean_exit(state, ENOMEM);
+state->init_data[N_PHILO] * sizeof(pthread_mutex_t));
+	state->sim = malloc(sizeof(pthread_mutex_t));
+	state->log = malloc(sizeof(pthread_mutex_t));
+	if (!state->philos || !state->forks || !state->is_running \
+|| !state->init_time || !state->sim || !state->log)
+		clean_exit(state, MAL_ERR, (int[]){0, ST_INIT});
 }
 
-int	init_simulation(t_state *state)
+void	init_philos(t_state *state)
 {
-	t_philo				*philo;
-	pthread_mutex_t		*fork;
 	int					i;
 
 	i = 0;
 	while (i < state->init_data[N_PHILO])
 	{
-		fork = init_fork();
-		philo = init_philo();
-		if (!philo || !fork)
-			return (ERROR);
-		state->philos[i] = philo;
-		state->forks[i] = *fork;
+		state->philos[i].no = i + 1;
+		state->philos[i].init_data = state->init_data;
+		state->philos[i].vitals = THINKING;
+		state->philos[i].is_running = state->is_running;
+		state->philos[i].mutex[SIM] = state->sim;
+		state->philos[i].mutex[LOG] = state->log;
+		state->philos[i].mutex[OWN_FORK] = &state->forks[i];
+		state->philos[i].mutex[NEXT_FORK] = \
+&state->forks[(i + 1) % state->init_data[N_PHILO]];
+		state->philos[i].init_time = state->init_time; //move to waiter when queue design implemented
 		i++;
 	}
-	state->philos[i] = NULL;
-	return (SUCCESS);
 }
 
-static t_philo	*init_philo(void)
+void	init_mutexes(t_state *state)
 {
-	t_philo			*philo;
+	int		i;
 
-	philo = malloc(sizeof(t_philo));
-	if (!philo)
-		return (NULL);
-	memset(philo, 0, sizeof(t_philo));
-	return (philo);
-}
-
-static pthread_mutex_t	*init_fork(void)
-{
-	pthread_mutex_t		*fork;
-
-	fork = malloc(sizeof(pthread_mutex_t));
-	//fork = memset(fork, 0, sizeof(pthread_mutex_t));
-	if (!fork)
-		return (NULL);
-	if (pthread_mutex_init(fork, NULL))
-		return (NULL);
-	return (fork);
+	if (pthread_mutex_init(state->sim, NULL))
+	 	clean_exit(state, PMI_ERR, (int[]){-1, MT_INIT});
+	if (pthread_mutex_init(state->log, NULL))
+	 	clean_exit(state, PMI_ERR, (int[]){-2, MT_INIT});
+	i = 0;
+	while (i < state->init_data[N_PHILO])
+	{
+		if (pthread_mutex_init(&state->forks[i], NULL))
+	 		clean_exit(state, PMI_ERR, (int[]){i, MT_INIT});
+		i++;
+	}
 }

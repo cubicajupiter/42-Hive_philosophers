@@ -20,20 +20,38 @@ int	main(int ac, char **av)
 
 	if (ac == 5 || ac == 6)
 	{
-		init_state(&state);
-		parse_args(ac, av, &state);
-		initialize(state);
-		run_and_log(state);
-		clean_exit(state, SUCCESS);
+		initialize(ac, av, &state);
+		run_sim(state);
+		clean_exit(state, SUCCESS, (int[]){ALL, END});
 	}
 	else
 		exit_with_instructions(EINVAL);
 }
 
-void	clean_exit(t_state *state, int exit_code)
+void	clean_exit(t_state *state, const uint8_t exit_code, int cleanup_mode[2])
 {
-	free(state); //separately free everything in state that was mallocd
-	printf("Philosphers exiting with exit code: %d\n", exit_code);
+	if (cleanup_mode[STAGE] >= PARSE)
+	{
+		if (cleanup_mode[STAGE] >= ST_INIT)
+		{
+			if (cleanup_mode[STAGE] >= PH_INIT)
+			{
+				if (cleanup_mode[STAGE] >= MT_INIT)
+				{
+					if (cleanup_mode[STAGE] >= THREADS)
+					{
+						if (cleanup_mode[STAGE] == END)
+							; //need two values for number of threads and philos to free. but at end it's obv N_PHILO
+					}
+				}
+			}
+		}
+	}
+
+
+	free(state); //separately free everything in state that was mallocd. 
+	//free in reverse order. init_data freed second last. state freed last.
+	//need state->init_data[N_PHILOS] (or cleanup_mode[COUNT]) for counting how many philos&forks to free.
 	exit(exit_code); //exit value
 }
 

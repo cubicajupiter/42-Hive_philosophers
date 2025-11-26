@@ -16,7 +16,7 @@ static int	check_arg(const char *arg);
 static int	ft_atoi(const char *str);
 static bool	is_digit(const int c);
 
-void	parse_args(int ac, char **av, t_state **state)
+void	init_parsed_args(int ac, char **av, t_state *state)
 {
 	int			data;
 	int			i;
@@ -25,13 +25,13 @@ void	parse_args(int ac, char **av, t_state **state)
 	while (i < ac)
 	{
 		if (check_arg(av[i]) == EINVAL)
-			exit_with_instructions(EINVAL);
+			clean_exit(state, EINVAL, (int[]){0, PARSE});
 		data = ft_atoi(av[i]);
-		(*state)->init_data[i - 1] = data;
+		state->init_data[i - 1] = data;
 		i++;
 	}
 	if (ac == 5)
-		(*state)->init_data[i - 1] = -1;
+		state->init_data[i - 1] = -1;
 }
 
 static int	check_arg(const char *arg)
@@ -62,8 +62,8 @@ static int	ft_atoi(const char *str)
 			value *= 10;
 		i++;
 	}
-	if (value > INT_MAX)
-		exit_with_instructions(EINVAL);
+	if (value > INT_MAX) //what if digits overflow even unsigned int?
+		exit_with_instructions(EINVAL); //need to clean
 	return ((int)value);
 }
 

@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:13:11 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/19 16:19:04 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/25 13:45:15 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,15 @@
 
 # include <sys/time.h>
 # include <pthread.h>
-# include <stdatomic.h>
 # include <stdint.h>
+# include <stdbool.h>
 
 //STATE CONSTANTS
+# define TS				0
+# define NO				1
+# define VITALS			2
+
+//INIT_DATA CONSTANTS
 # define N_PHILO		0
 # define TTO_DIE		1
 # define TTO_EAT		2
@@ -26,8 +31,24 @@
 # define N_EAT			4
 
 //STATUS CODES
-# define ERROR			-1
+# define ERROR			1
+# define PMI_ERR		2
+# define PTC_ERR		3
+# define MAL_ERR		4
 # define SUCCESS		0
+
+//ERROR MODES
+# define PARSE			0
+# define ST_INIT		1
+# define PH_INIT		2
+# define MT_INIT		3
+# define THREADS		4
+# define END			5
+
+//ERROR MODE HANDLES
+# define ALL			-1
+# define PH_COUNT		0
+# define STAGE			1
 
 typedef struct s_state		t_state;
 typedef struct s_fork		t_fork;
@@ -35,6 +56,7 @@ typedef struct s_philo		t_philo;
 typedef struct s_queue		t_queue;
 
 typedef enum e_status		t_status;
+typedef enum e_mutex_t		t_mutex_t;
 
 enum e_status
 {
@@ -44,33 +66,42 @@ enum e_status
 	THINKING,
 };
 
+enum e_mutex_t
+{
+	SIM,
+	LOG,
+	OWN_FORK,
+	NEXT_FORK,
+};
+
 struct s_state
 {
-	uint64_t			init_time;
 	int					init_data[5];
-	t_philo				**philos;
+	pthread_t			*threads;
+	t_philo				*philos;
 	pthread_mutex_t		*forks;
-	atomic_bool			run_sim;
+	pthread_mutex_t		*sim;
+	pthread_mutex_t		*log;
+	pthread_mutex_t		*dine;
+	bool				*is_running;
+	bool				*is_dining;
+	uint64_t			*init_time;
 };
 
 struct s_philo
 {
 	int					no;
-	int					init_data[5];
-	t_status			vitals; //could be just local in routine.
-	uint64_t			init_time;
-	atomic_bool			*run_sim;
-	pthread_mutex_t		*own_fork;
-	pthread_mutex_t		*next_fork;
-	t_queue				*q_ptr;
+	int					*init_data;
+	t_status			vitals;
+	uint64_t			*init_time;
+	bool				*is_running;
+	pthread_mutex_t		*mutex[4];
 };
 
 struct s_queue
 {
-	pthread_mutex_t		rear_lock;
-	int					*rear_ptr;
-	int					*front_ptr;
-	int					queue[1024][3]; //1024 items with 3 integers each:  12288 bytes  with 4 byte integers
+	int					data[3];
+	t_queue				*next;
 };
 
 #endif
