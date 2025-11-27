@@ -13,7 +13,6 @@
 #include "philosophers.h"
 
 static void		dispatcher(t_state *state);
-static void		joiner(const t_state *state);
 
 void	run_sim(t_state *state)
 {
@@ -21,7 +20,7 @@ void	run_sim(t_state *state)
 
 	state->threads = threads;
 	dispatcher(state);
-	joiner(state);
+	joiner(state, state->init_data[N_PHILO] + 1);
 }
 
 static void	dispatcher(t_state *state)
@@ -39,19 +38,20 @@ static void	dispatcher(t_state *state)
 		clean_exit(state, PTC_ERR, (int[]){i, THREADS});
 }
 
-static void	joiner(const t_state *state)
+void	joiner(const t_state *state, int n_pthreads)
 {
 	int			i;
 	void		*retval;
 
 	i = 0;
-	while (i < state->init_data[N_PHILO] + 1)
+	while (i < n_pthreads)
 	{
 		pthread_join(state->threads[i], &retval);
 		i++;
 	}
-	*state->dining = DONE;
-	pthread_join(state->threads[i], &retval);
+	mt_diners_flag_store(state->dine, DONE, state->mt_dflag);
+	if (n_pthreads == state->init_data[N_PHILO] + 1)
+		pthread_join(state->threads[i], &retval);
 }
 
 uint64_t	get_time(const uint64_t init_time)

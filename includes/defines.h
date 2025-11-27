@@ -18,11 +18,6 @@
 # include <stdint.h>
 # include <stdbool.h>
 
-//STATE CONSTANTS
-# define TS				0
-# define NO				1
-# define VITALS			2
-
 //INIT_DATA CONSTANTS
 # define N_PHILO		0
 # define TTO_DIE		1
@@ -38,9 +33,9 @@
 # define SUCCESS		0
 
 //ERROR MODES
-# define PARSE			0
-# define ST_INIT		1
-# define PH_INIT		2
+# define STATE			0
+# define PARSE			1
+# define SM_INIT		2
 # define MT_INIT		3
 # define THREADS		4
 # define END			5
@@ -57,21 +52,22 @@ typedef struct s_queue		t_queue;
 
 typedef enum e_status		t_status;
 typedef enum e_mutex_t		t_mutex_t;
-
-enum e_status
-{
-	DEAD,
-	EATING,
-	SLEEPING,
-	THINKING,
-};
+typedef enum e_dflag		t_dflag;
 
 enum e_mutex_t
 {
 	SIM,
 	LOG,
+	DFLAG,
 	OWN_FORK,
 	NEXT_FORK,
+};
+
+enum e_dflag
+{
+	DINE = 1,
+	DONE,
+	DEAD,
 };
 
 struct s_state
@@ -80,22 +76,24 @@ struct s_state
 	pthread_t			*threads;
 	t_philo				*philos;
 	pthread_mutex_t		*forks;
-	pthread_mutex_t		*sim;
-	pthread_mutex_t		*log;
-	pthread_mutex_t		*dine;
+	pthread_mutex_t		*mt_sim;
+	pthread_mutex_t		*mt_log;
+	pthread_mutex_t		*mt_dflag;
 	bool				*is_running;
-	bool				*is_dining;
+	t_dflag				*dine;
 	uint64_t			*init_time;
 };
 
 struct s_philo
 {
 	int					no;
+	int					n_eaten;
 	int					*init_data;
-	t_status			vitals;
 	uint64_t			*init_time;
+	uint64_t			last_eaten;
 	bool				*is_running;
-	pthread_mutex_t		*mutex[4];
+	t_dflag				*dine;
+	pthread_mutex_t		*mutex[5];
 };
 
 struct s_queue

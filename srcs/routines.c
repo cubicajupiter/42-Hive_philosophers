@@ -6,25 +6,27 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:45 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/25 14:50:45 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/11/27 12:08:04 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+//FIX: 2 seems to have died after 200ms of previous time eating, with previous  timetodie at 610? What gives?
+
 void	*dine(void *arg)
 {
 	t_philo 		*philo;
-	int				n_eaten;
+	int				timeout;
 
-	n_eaten = 0;
 	philo = (t_philo *)arg;
-	printf("no: %d, is_running: %d and its ptr: %p, mutex[SIM] ptr: %p\n", philo->no, *philo->is_running, philo->is_running, philo->mutex[SIM]);
+	timeout = 0;
 	while (!mt_boolean_load(philo->is_running, philo->mutex[SIM]))
 	{
+		if (timeout++ == 7500)
+			return (NULL);
 		usleep(50);
 	}
-	printf("flag given\n");
 	if (philo->init_data[N_EAT] == 0)
 		return (NULL);
 	if (philo->init_data[N_PHILO] == 1)
@@ -32,9 +34,10 @@ void	*dine(void *arg)
 	while (mt_boolean_load(philo->is_running, philo->mutex[SIM]))
 	{
 		if (philo->no % 2 == 1)
-			usleep(50);
-		ph_eat(philo, philo->init_data[TTO_EAT], &n_eaten);
-		if (n_eaten == philo->init_data[N_EAT])
+			usleep(100);
+		if (ph_eat(philo, philo->init_data[TTO_EAT]) == DEAD)
+			break ;
+		if (philo->n_eaten == philo->init_data[N_EAT])
 			break ;
 		ph_sleep(philo, philo->init_data[TTO_SLEEP]);
 		ph_think(philo);
@@ -55,17 +58,26 @@ void	*solo(t_philo *philo)
 	return (NULL);
 }
 
-void	ph_eat(t_philo *philo, const int tto, int *n_eaten)
+t_dflag	ph_eat(t_philo *philo, const int tto)
 {
 	uint64_t			timestamp;
 
+	//FIX: IT'S NOT SAVING THE LAST TIME A PHILO ATE?
+	//FIX: I think the TTO_DIE is comparing us to ms and is in wrong place also. Should happen when eating actually gets to start.
+	timestamp = get_time(*philo->init_time);
+	if ((int)(timestamp - philo->last_eaten) >= philo->init_data[TTO_DIE]) //wrong place wrong time ? :D
+	{
+		mt_diners_flag_store(philo->dine, DEAD, philo->mutex[DFLAG]);
+		mt_putlog(timestamp, philo->no, "has died\n", philo->mutex[LOG]);
+		return (DEAD);
+	}
 	mt_lock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK], philo);
 	timestamp = get_time(*philo->init_time);
-	philo->vitals = EATING;
 	mt_putlog(timestamp, philo->no, "is eating\n", philo->mutex[LOG]);
 	usleep(tto * 1000);
 	mt_unlock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK]);
-	(*n_eaten)++;
+	philo->n_eaten++;
+	return (DINE);
 }
 
 void	ph_sleep(t_philo *philo, const int tto)
@@ -73,7 +85,6 @@ void	ph_sleep(t_philo *philo, const int tto)
 	uint64_t			timestamp;
 
 	timestamp = get_time(*philo->init_time);
-	philo->vitals = SLEEPING;
 	mt_putlog(timestamp, philo->no, "is sleeping\n", philo->mutex[LOG]);
 	usleep(tto * 1000);
 }
@@ -83,6 +94,5 @@ void	ph_think(t_philo *philo)
 	uint64_t			timestamp;
 
 	timestamp = get_time(*philo->init_time);
-	philo->vitals = THINKING;
 	mt_putlog(timestamp, philo->no, "is thinking\n", philo->mutex[LOG]);
 }

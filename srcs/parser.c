@@ -13,7 +13,7 @@
 #include "philosophers.h"
 
 static int	check_arg(const char *arg);
-static int	ft_atoi(const char *str);
+static int	ft_atoi(t_state *state, const char *str);
 static bool	is_digit(const int c);
 
 void	init_parsed_args(int ac, char **av, t_state *state)
@@ -26,7 +26,7 @@ void	init_parsed_args(int ac, char **av, t_state *state)
 	{
 		if (check_arg(av[i]) == EINVAL)
 			clean_exit(state, EINVAL, (int[]){0, PARSE});
-		data = ft_atoi(av[i]);
+		data = ft_atoi(state, av[i]);
 		state->init_data[i - 1] = data;
 		i++;
 	}
@@ -48,9 +48,9 @@ static int	check_arg(const char *arg)
 	return (SUCCESS);
 }
 
-static int	ft_atoi(const char *str)
+static int	ft_atoi(t_state *state, const char *str)
 {
-	unsigned int		value;
+	unsigned long		value;
 	int					i;
 
 	i = 0;
@@ -63,7 +63,7 @@ static int	ft_atoi(const char *str)
 		i++;
 	}
 	if (value > INT_MAX) //what if digits overflow even unsigned int?
-		exit_with_instructions(EINVAL); //need to clean
+		clean_exit(state, EINVAL, (int[]){0, PARSE});
 	return ((int)value);
 }
 

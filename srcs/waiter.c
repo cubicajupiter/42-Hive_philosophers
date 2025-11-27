@@ -1,35 +1,49 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   waiter.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/27 11:43:31 by jvalkama          #+#    #+#             */
+/*   Updated: 2025/11/27 12:00:04 by jvalkama         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philosophers.h"
 
-// wait for all threads to launch before running sim.
+static t_dflag	mt_diners_flag_load(t_dflag *flag, pthread_mutex_t *mutex);
 
 void	*monitor(void *arg)
 {
 	t_state			*state;
-	bool			is_running;
 
 	state = (t_state *)arg;
 	*state->init_time = get_time(0);
-	mt_boolean_store(state->is_running, true, state->sim);
-	is_running = true;
-	while (mt_boolean_load(state->dining, state->dine)) //FIX: diner's flag considered communication between philos?
-	{ //THE MONITOR USED TO CAUSE A DAta RACE, PRESUMABLY, so now alternative approach: diners flag.
-		no = 0;
-		while (is_running == true)
-		{
-			printf("philo[%d] vitals: %d\n", no, state->philos[0].vitals);
-			if (state->philos[no].vitals == DEAD) //FIX: WE ARE GOING HERE CURRETLY. POSSIBLY A DATA RACE.
-			{
-				printf("ending too soon?\n");
-				mt_boolean_store(state->is_running, false, state->sim);
-				is_running = false;
-				break ;
-			}
-			no++;
-		}
-		usleep(200);
+	mt_boolean_store(state->is_running, true, state->mt_sim);
+	while (DINE == mt_diners_flag_load(state->dine, state->mt_dflag))
+	{
+		usleep(50);
 	}
-	mt_boolean_store(state->is_running, false, state->sim);
+	mt_boolean_store(state->is_running, false, state->mt_sim);
 	return (NULL);
+}
+
+static t_dflag	mt_diners_flag_load(t_dflag *dflag, pthread_mutex_t *mutex)
+{
+	t_dflag		flag;
+
+	pthread_mutex_lock(mutex);
+	flag = *dflag;
+	pthread_mutex_unlock(mutex);
+	return (flag);
+}
+
+void	mt_diners_flag_store(t_dflag *flag, t_dflag value, pthread_mutex_t *mutex)
+{
+	pthread_mutex_lock(mutex);
+	*flag = value;
+	pthread_mutex_unlock(mutex);
 }
 
 /*

@@ -24,7 +24,8 @@
 
 //main.c
 void		clean_exit(t_state *state, const uint8_t exit_code, int cleanup_mode[2]);
-void		exit_with_instructions(const int exit_code);
+void		exit_with_instructions(const uint8_t exit_code);
+void		joiner(const t_state *state, int n_pthreads);
 
 //parser.c
 void		init_parsed_args(int ac, char **av, t_state *state);
@@ -42,16 +43,13 @@ uint64_t	get_time(const uint64_t init_time); //temp here
 //routines.c
 void		*dine(void *arg);
 void		*solo(t_philo *philo);
-void		ph_eat(t_philo *philo, const int tto, int *n_eaten);
+t_dflag		ph_eat(t_philo *philo, const int tto);
 void		ph_sleep(t_philo *philo, const int tto);
 void		ph_think(t_philo *philo);
 
 //waiter.c
 void		*monitor(void *arg);
-void		queue(const t_philo *philo, const suseconds_t ts);
-size_t		merge_batch(int *queue, char **batch, size_t *len);
-void		put_batch(t_state *state);
-uint64_t	get_time(const uint64_t init_time);
+void		mt_diners_flag_store(t_dflag *flag, t_dflag value, pthread_mutex_t *mutex);
 
 //mutex.c
 void	mt_boolean_store(bool *b, bool value, pthread_mutex_t *mutex);
