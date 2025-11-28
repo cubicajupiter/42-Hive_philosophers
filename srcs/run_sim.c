@@ -20,7 +20,7 @@ void	run_sim(t_state *state)
 
 	state->threads = threads;
 	dispatcher(state);
-	joiner(state, state->init_data[N_PHILO] + 1);
+	joiner(state, state->init_data[N_PHILO]);
 }
 
 static void	dispatcher(t_state *state)
@@ -50,7 +50,7 @@ void	joiner(const t_state *state, int n_pthreads)
 		i++;
 	}
 	mt_diners_flag_store(state->dine, DONE, state->mt_dflag);
-	if (n_pthreads == state->init_data[N_PHILO] + 1)
+	if (n_pthreads == state->init_data[N_PHILO])
 		pthread_join(state->threads[i], &retval);
 }
 

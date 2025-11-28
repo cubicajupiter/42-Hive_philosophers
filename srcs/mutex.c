@@ -29,23 +29,31 @@ bool	mt_boolean_load(bool *b, pthread_mutex_t *mutex)
 	return (boolean);
 }
 
-void	mt_putlog(uint64_t timestamp, int no, char *log, pthread_mutex_t *mutex)
+void	mt_putlog(uint64_t timestamp, t_philo *philo, char *log, pthread_mutex_t *mutex)
 {
+	//FIX: logging should stop when is_running no longer true. 
 	pthread_mutex_lock(mutex);
-	printf("%ld %d %s", timestamp, no, log);
+	printf("%ld %d %s", timestamp, philo->no, log);
 	pthread_mutex_unlock(mutex);
 }
 
-void	mt_lock_forks(pthread_mutex_t *own, pthread_mutex_t *next, t_philo *philo)
+t_dflag	mt_lock_forks(pthread_mutex_t *own, pthread_mutex_t *next, t_philo *philo)
 {
 	uint64_t			timestamp;
 
 	pthread_mutex_lock(own);
+	philo->is_forkmtx[0] = true;
+	if (dine_or_done(philo) == DONE)
+		return (DONE);
 	timestamp = get_time(*philo->init_time);
-	mt_putlog(timestamp, philo->no, "picked up a fork\n", philo->mutex[LOG]);
+	mt_putlog(timestamp, philo, "picked up a fork\n", philo->mutex[LOG]);
 	pthread_mutex_lock(next);
+	philo->is_forkmtx[1] = true;
+	if (dine_or_done(philo) == DONE)
+		return (DONE);
 	timestamp = get_time(*philo->init_time);
-	mt_putlog(timestamp, philo->no, "picked up a fork\n", philo->mutex[LOG]);
+	mt_putlog(timestamp, philo, "picked up a fork\n", philo->mutex[LOG]);
+	return (DINE);
 }
 
 void	mt_unlock_forks(pthread_mutex_t *own, pthread_mutex_t *next)

@@ -73,7 +73,7 @@ static void	destroy_mutexes(t_state *state, int ph_count)
 {
 	int		i;
 
-	i = ph_count;
+	i = ph_count - 1;
 	while (i >= 0)
 		pthread_mutex_destroy(&state->forks[i--]);
 	if (i-- >= -3)

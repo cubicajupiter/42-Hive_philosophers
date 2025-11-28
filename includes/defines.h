@@ -94,6 +94,7 @@ struct s_philo
 	bool				*is_running;
 	t_dflag				*dine;
 	pthread_mutex_t		*mutex[5];
+	bool				is_forkmtx[2];
 };
 
 struct s_queue

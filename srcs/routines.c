@@ -12,7 +12,13 @@
 
 #include "philosophers.h"
 
-//FIX: 2 seems to have died after 200ms of previous time eating, with previous  timetodie at 610? What gives?
+//FIX: high number of philos causes deadlocks.
+//FIX: high number of philos also causes death cascades, where adjacent philos die simultaneously.
+//NOTE: works much better when redirected to file instead of stdout
+
+static void		*ph_solo(t_philo *philo);
+static t_dflag	ph_eat(t_philo *philo, const int tto);
+static t_dflag	ph_idle(t_philo *philo, const int time_len);
 
 void	*dine(void *arg)
 {
@@ -30,69 +36,99 @@ void	*dine(void *arg)
 	if (philo->init_data[N_EAT] == 0)
 		return (NULL);
 	if (philo->init_data[N_PHILO] == 1)
-		return (solo(philo));
+		return (ph_solo(philo));
+	if (philo->no % 2 == 1)
+		usleep(150);
 	while (mt_boolean_load(philo->is_running, philo->mutex[SIM]))
 	{
-		if (philo->no % 2 == 1)
-			usleep(100);
-		if (ph_eat(philo, philo->init_data[TTO_EAT]) == DEAD)
+		if (philo->no % 2 == 1 && philo->n_eaten != 0)
+			usleep(philo->init_data[TTO_EAT] / 2 * 1000);
+		if (ph_eat(philo, philo->init_data[TTO_EAT]) == DONE)
 			break ;
 		if (philo->n_eaten == philo->init_data[N_EAT])
 			break ;
-		ph_sleep(philo, philo->init_data[TTO_SLEEP]);
-		ph_think(philo);
+		if (ph_idle(philo, philo->init_data[TTO_SLEEP]) == DONE)
+			break ;
+		if (ph_idle(philo, 0) == DONE)
+			break ;
 	}
 	return (NULL);
 }
 
-void	*solo(t_philo *philo)
+static void	*ph_solo(t_philo *philo)
 {
 	uint64_t			timestamp;
 
 	timestamp = get_time(*philo->init_time);
 	pthread_mutex_lock(philo->mutex[OWN_FORK]);
-	printf("%ld %d %s\n", timestamp, philo->no, "picked up a fork\n");
+	printf("%ld %d %s\n", timestamp, philo->no, "picked up a fork");
 	usleep(philo->init_data[TTO_DIE] * 1000);
 	timestamp = get_time(*philo->init_time);
-	printf("%ld %d %s\n", timestamp, philo->no, "has died\n");
+	printf("%ld %d %s\n", timestamp, philo->no, "has died");
 	return (NULL);
 }
 
-t_dflag	ph_eat(t_philo *philo, const int tto)
+static t_dflag	ph_eat(t_philo *philo, const int time_len)
 {
 	uint64_t			timestamp;
 
-	//FIX: IT'S NOT SAVING THE LAST TIME A PHILO ATE?
-	//FIX: I think the TTO_DIE is comparing us to ms and is in wrong place also. Should happen when eating actually gets to start.
+	if (dine_or_done(philo) == DONE)
+		return (DONE);
+	if (mt_lock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK], philo) == DONE)
+		return (DONE);
 	timestamp = get_time(*philo->init_time);
+	mt_putlog(timestamp, philo, "is eating\n", philo->mutex[LOG]);
+	usleep(time_len * 1000);
+	mt_unlock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK]);
+	philo->is_forkmtx[0] = false;
+	philo->is_forkmtx[1] = false;
+	philo->n_eaten++;
+	philo->last_eaten = get_time(*philo->init_time);
+	return (dine_or_done(philo));
+}
+
+static t_dflag	ph_idle(t_philo *philo, const int time_len)
+{
+	uint64_t			timestamp;
+
+	if (dine_or_done(philo) == DONE)
+		return (DONE);
+	if (time_len)
+	{
+		timestamp = get_time(*philo->init_time);
+		mt_putlog(timestamp, philo, "is sleeping\n", philo->mutex[LOG]);
+		usleep(time_len * 1000);
+	}
+	else
+	{
+		timestamp = get_time(*philo->init_time);
+		mt_putlog(timestamp, philo, "is thinking\n", philo->mutex[LOG]);
+	}
+	return (dine_or_done(philo));
+}
+
+t_dflag	dine_or_done(t_philo *philo)
+{
+	uint64_t			timestamp;
+
+	timestamp = get_time(*philo->init_time);
+	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
+	{
+		if (philo->is_forkmtx[0] == true)
+			pthread_mutex_unlock(philo->mutex[OWN_FORK]);
+		if (philo->is_forkmtx[1] == true)
+			pthread_mutex_unlock(philo->mutex[NEXT_FORK]);
+		return (DONE);
+	}
 	if ((int)(timestamp - philo->last_eaten) >= philo->init_data[TTO_DIE]) //wrong place wrong time ? :D
 	{
 		mt_diners_flag_store(philo->dine, DEAD, philo->mutex[DFLAG]);
-		mt_putlog(timestamp, philo->no, "has died\n", philo->mutex[LOG]);
-		return (DEAD);
+		if (philo->is_forkmtx[0] == true)
+			pthread_mutex_unlock(philo->mutex[OWN_FORK]);
+		if (philo->is_forkmtx[1] == true)
+			pthread_mutex_unlock(philo->mutex[NEXT_FORK]);
+		mt_putlog(timestamp, philo, "has died\n", philo->mutex[LOG]);
+		return (DONE);
 	}
-	mt_lock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK], philo);
-	timestamp = get_time(*philo->init_time);
-	mt_putlog(timestamp, philo->no, "is eating\n", philo->mutex[LOG]);
-	usleep(tto * 1000);
-	mt_unlock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK]);
-	philo->n_eaten++;
 	return (DINE);
-}
-
-void	ph_sleep(t_philo *philo, const int tto)
-{
-	uint64_t			timestamp;
-
-	timestamp = get_time(*philo->init_time);
-	mt_putlog(timestamp, philo->no, "is sleeping\n", philo->mutex[LOG]);
-	usleep(tto * 1000);
-}
-
-void	ph_think(t_philo *philo)
-{
-	uint64_t			timestamp;
-
-	timestamp = get_time(*philo->init_time);
-	mt_putlog(timestamp, philo->no, "is thinking\n", philo->mutex[LOG]);
 }

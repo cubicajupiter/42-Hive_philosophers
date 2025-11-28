@@ -58,9 +58,18 @@ void	init_philos(t_state *state)
 		state->philos[i].mutex[SIM] = state->mt_sim;
 		state->philos[i].mutex[LOG] = state->mt_log;
 		state->philos[i].mutex[DFLAG] = state->mt_dflag;
-		state->philos[i].mutex[OWN_FORK] = &state->forks[i];
-		state->philos[i].mutex[NEXT_FORK] = &state->forks[(i + 1) % n_philo];
+		if (i % 2 == 0)
+			state->philos[i].mutex[OWN_FORK] = &state->forks[i];
+		else
+			state->philos[i].mutex[OWN_FORK] = &state->forks[(i + 1) % n_philo];
+		if (i % 2 == 0)
+			state->philos[i].mutex[NEXT_FORK] = &state->forks[(i + 1) % n_philo];
+		else
+			state->philos[i].mutex[NEXT_FORK] = &state->forks[i];
 		state->philos[i].init_time = state->init_time; //move to waiter when queue design implemented
+		state->philos[i].last_eaten = 0;
+		state->philos[i].is_forkmtx[0] = false;
+		state->philos[i].is_forkmtx[1] = false;
 		i++;
 	}
 }
