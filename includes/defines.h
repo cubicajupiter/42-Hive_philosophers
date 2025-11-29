@@ -45,6 +45,11 @@
 # define PH_COUNT		0
 # define STAGE			1
 
+//DINERS' FLAGS
+# define DINE			0
+# define DONE			1
+# define DEAD			2
+
 typedef struct s_state		t_state;
 typedef struct s_fork		t_fork;
 typedef struct s_philo		t_philo;
@@ -52,7 +57,6 @@ typedef struct s_queue		t_queue;
 
 typedef enum e_status		t_status;
 typedef enum e_mutex_t		t_mutex_t;
-typedef enum e_dflag		t_dflag;
 
 enum e_mutex_t
 {
@@ -61,13 +65,6 @@ enum e_mutex_t
 	DFLAG,
 	OWN_FORK,
 	NEXT_FORK,
-};
-
-enum e_dflag
-{
-	DINE = 1,
-	DONE,
-	DEAD,
 };
 
 struct s_state
@@ -80,7 +77,7 @@ struct s_state
 	pthread_mutex_t		*mt_log;
 	pthread_mutex_t		*mt_dflag;
 	bool				*is_running;
-	t_dflag				*dine;
+	int					*dine;
 	uint64_t			*init_time;
 };
 
@@ -92,7 +89,7 @@ struct s_philo
 	uint64_t			*init_time;
 	uint64_t			last_eaten;
 	bool				*is_running;
-	t_dflag				*dine;
+	int					*dine;
 	pthread_mutex_t		*mutex[5];
 	bool				is_forkmtx[2];
 };

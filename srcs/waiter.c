@@ -12,26 +12,46 @@
 
 #include "philosophers.h"
 
-static t_dflag	mt_diners_flag_load(t_dflag *flag, pthread_mutex_t *mutex);
+static int	mt_diners_flag_load(int *flag, pthread_mutex_t *mutex);
 
 void	*monitor(void *arg)
 {
 	t_state			*state;
+	int				dflag;
+	int				n_philo;
+	int				i;
 
 	state = (t_state *)arg;
+	n_philo = state->init_data[N_PHILO];
+	dflag = DINE;
 	*state->init_time = get_time(0);
 	mt_boolean_store(state->is_running, true, state->mt_sim);
-	while (DINE == mt_diners_flag_load(state->dine, state->mt_dflag))
+	while (dflag == DINE) //FIX: here just use is_running. SWITCH BACK TO OLD METHOD: LET MONITOR CHECK VITALS (JUST THE TIME). this enables immediate printing of death
 	{
-		usleep(50);
+		i = 0;
+		while (i++ < n_philo)
+		{
+			philo = state->philos[i];
+			if (philo_dead(philo) == DONE)
+			{
+				mt_boolean_store(state->is_running, false, state->mt_sim); //FIX: Routine would probably best check is_running anywhere that has dead_or_alive now.
+				dflag = DEAD;
+				//dflag = mt_diners_flag_load(state->dine, state->mt_dflag);
+			}
+		}
 	}
-	mt_boolean_store(state->is_running, false, state->mt_sim);
+	//mt_boolean_store(state->is_running, false, state->mt_sim);
+	//if (dflag != DONE)
+	//{
+	//	timestamp = get_time(*state->init_time);
+	//	mt_putlog(timestamp, dflag - DEAD, "died\n", state->mt_log);
+	//}
 	return (NULL);
 }
-
-static t_dflag	mt_diners_flag_load(t_dflag *dflag, pthread_mutex_t *mutex)
+/*
+static int	mt_diners_flag_load(int *dflag, pthread_mutex_t *mutex)
 {
-	t_dflag		flag;
+	int		flag;
 
 	pthread_mutex_lock(mutex);
 	flag = *dflag;
@@ -39,11 +59,28 @@ static t_dflag	mt_diners_flag_load(t_dflag *dflag, pthread_mutex_t *mutex)
 	return (flag);
 }
 
-void	mt_diners_flag_store(t_dflag *flag, t_dflag value, pthread_mutex_t *mutex)
+void	mt_diners_flag_store(int *flag, int value, pthread_mutex_t *mutex)
 {
 	pthread_mutex_lock(mutex);
 	*flag = value;
 	pthread_mutex_unlock(mutex);
+}
+*/
+int	philo_dead(t_philo *philo)
+{
+	uint64_t			timestamp;
+
+	timestamp = get_time(*philo->init_time);
+	if ((int)(timestamp - philo->last_eaten) >= philo->init_data[TTO_DIE])
+	{
+		if (philo->is_forkmtx[0] == true)
+			pthread_mutex_unlock(philo->mutex[OWN_FORK]);
+		if (philo->is_forkmtx[1] == true)
+			pthread_mutex_unlock(philo->mutex[NEXT_FORK]);
+		mt_putlog(timestamp, philo, "died\n", philo->mutex[LOG]);
+		return (DEAD);
+	}
+	return (DINE);
 }
 
 /*

@@ -27,7 +27,7 @@ void	init_state(t_state *state)
 {
 	state->is_running = malloc(sizeof(bool));
 	*state->is_running = false;
-	state->dine = malloc(sizeof(t_dflag));
+	state->dine = malloc(sizeof(int));
 	*state->dine = DINE;
 	state->init_time = malloc(sizeof(uint64_t));
 	state->philos = malloc((state->init_data[N_PHILO]) * sizeof(t_philo));

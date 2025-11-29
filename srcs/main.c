@@ -86,7 +86,7 @@ static void	destroy_mutexes(t_state *state, int ph_count)
 
 void	exit_with_instructions(const uint8_t exit_code)
 {
-	size_t		bytes;
+	int		bytes;
 
 	bytes = printf("%s%s%s%s%s%s", \
 "Usage: ./philosophers <following arguments>\n", \

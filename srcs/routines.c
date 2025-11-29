@@ -12,13 +12,9 @@
 
 #include "philosophers.h"
 
-//FIX: high number of philos causes deadlocks.
-//FIX: high number of philos also causes death cascades, where adjacent philos die simultaneously.
-//NOTE: works much better when redirected to file instead of stdout
-
 static void		*ph_solo(t_philo *philo);
-static t_dflag	ph_eat(t_philo *philo, const int tto);
-static t_dflag	ph_idle(t_philo *philo, const int time_len);
+static int		ph_eat(t_philo *philo, const int tto);
+static int		ph_idle(t_philo *philo, const int time_len);
 
 void	*dine(void *arg)
 {
@@ -68,7 +64,7 @@ static void	*ph_solo(t_philo *philo)
 	return (NULL);
 }
 
-static t_dflag	ph_eat(t_philo *philo, const int time_len)
+static int	ph_eat(t_philo *philo, const int time_len)
 {
 	uint64_t			timestamp;
 
@@ -77,7 +73,7 @@ static t_dflag	ph_eat(t_philo *philo, const int time_len)
 	if (mt_lock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK], philo) == DONE)
 		return (DONE);
 	timestamp = get_time(*philo->init_time);
-	mt_putlog(timestamp, philo, "is eating\n", philo->mutex[LOG]);
+	mt_putlog(timestamp, philo->no, "is eating\n", philo->mutex[LOG]);
 	usleep(time_len * 1000);
 	mt_unlock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK]);
 	philo->is_forkmtx[0] = false;
@@ -87,7 +83,7 @@ static t_dflag	ph_eat(t_philo *philo, const int time_len)
 	return (dine_or_done(philo));
 }
 
-static t_dflag	ph_idle(t_philo *philo, const int time_len)
+static int	ph_idle(t_philo *philo, const int time_len)
 {
 	uint64_t			timestamp;
 
@@ -96,18 +92,18 @@ static t_dflag	ph_idle(t_philo *philo, const int time_len)
 	if (time_len)
 	{
 		timestamp = get_time(*philo->init_time);
-		mt_putlog(timestamp, philo, "is sleeping\n", philo->mutex[LOG]);
+		mt_putlog(timestamp, philo->no, "is sleeping\n", philo->mutex[LOG]);
 		usleep(time_len * 1000);
 	}
 	else
 	{
 		timestamp = get_time(*philo->init_time);
-		mt_putlog(timestamp, philo, "is thinking\n", philo->mutex[LOG]);
+		mt_putlog(timestamp, philo->no, "is thinking\n", philo->mutex[LOG]);
 	}
 	return (dine_or_done(philo));
 }
 
-t_dflag	dine_or_done(t_philo *philo)
+int	dine_or_done(t_philo *philo)
 {
 	uint64_t			timestamp;
 
@@ -120,14 +116,14 @@ t_dflag	dine_or_done(t_philo *philo)
 			pthread_mutex_unlock(philo->mutex[NEXT_FORK]);
 		return (DONE);
 	}
-	if ((int)(timestamp - philo->last_eaten) >= philo->init_data[TTO_DIE]) //wrong place wrong time ? :D
+	if ((int)(timestamp - philo->last_eaten) >= philo->init_data[TTO_DIE])
 	{
-		mt_diners_flag_store(philo->dine, DEAD, philo->mutex[DFLAG]);
+		mt_diners_flag_store(philo->dine, DEAD + philo->no, philo->mutex[DFLAG]);
 		if (philo->is_forkmtx[0] == true)
 			pthread_mutex_unlock(philo->mutex[OWN_FORK]);
 		if (philo->is_forkmtx[1] == true)
 			pthread_mutex_unlock(philo->mutex[NEXT_FORK]);
-		mt_putlog(timestamp, philo, "has died\n", philo->mutex[LOG]);
+		//mt_putlog(timestamp, philo, "died\n", philo->mutex[LOG]);
 		return (DONE);
 	}
 	return (DINE);
