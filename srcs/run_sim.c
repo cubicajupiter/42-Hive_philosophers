@@ -12,18 +12,22 @@
 
 #include "philosophers.h"
 
-static void		dispatcher(t_state *state);
+static uint8_t		dispatcher(t_state *state);
 
-void	run_sim(t_state *state)
+uint8_t	run_sim(t_state *state)
 {
 	pthread_t		threads[state->init_data[N_PHILO] + 1];
+	uint8_t			result;
 
 	state->threads = threads;
-	dispatcher(state);
+	result = dispatcher(state);
+	if (result != SUCCESS)
+		return (result);
 	joiner(state, state->init_data[N_PHILO]);
+	return (SUCCESS);
 }
 
-static void	dispatcher(t_state *state)
+static uint8_t	dispatcher(t_state *state)
 {
 	int				i;
 
@@ -31,11 +35,12 @@ static void	dispatcher(t_state *state)
 	while (i < state->init_data[N_PHILO])
 	{
 		if (pthread_create(&state->threads[i], NULL, dine, &state->philos[i]))
-			clean_exit(state, PTC_ERR, (int[]){i, THREADS});
+			return (clean(state, PTC_ERR, (int[]){i, THREADS}));
 		i++;
 	}
 	if (pthread_create(&state->threads[i], NULL, monitor, state))
-		clean_exit(state, PTC_ERR, (int[]){i, THREADS});
+		return (clean(state, PTC_ERR, (int[]){i, THREADS}));
+	return (SUCCESS);
 }
 
 void	joiner(const t_state *state, int n_pthreads)
@@ -49,17 +54,18 @@ void	joiner(const t_state *state, int n_pthreads)
 		pthread_join(state->threads[i], &retval);
 		i++;
 	}
-	mt_diners_flag_store(state->dine, DONE, state->mt_dflag);
+	usleep(150);
+	mt_boolean_store(state->is_running, false, state->mt_sim);
 	if (n_pthreads == state->init_data[N_PHILO])
 		pthread_join(state->threads[i], &retval);
 }
 
-uint64_t	get_time(const uint64_t init_time)
+int64_t	get_time(const int64_t init_time)
 {
 	struct timeval		tv;
-	uint64_t			time;
+	int64_t				time;
 
 	gettimeofday(&tv, NULL);
-	time = (uint64_t)(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+	time = (int64_t)(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 	return (time - init_time);
 }

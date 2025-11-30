@@ -18,18 +18,24 @@ static void	destroy_mutexes(t_state *state, int ph_count);
 int	main(int ac, char **av)
 {
 	t_state			*state;
+	uint8_t			result;
 
 	if (ac == 5 || ac == 6)
 	{
-		initialize(ac, av, &state);
-		run_sim(state);
-		clean_exit(state, SUCCESS, (int[]){ALL, END});
+		result = initialize(ac, av, &state);
+		if (result != SUCCESS)
+			return (result);
+		result = run_sim(state);
+		if (result == SUCCESS)
+			clean(state, SUCCESS, (int[]){ALL, END});
+		return ((int)result);
 	}
 	else
-		exit_with_instructions(EINVAL);
+		display_instructions();
+	return (EINVAL);
 }
 
-void	clean_exit(t_state *state, const uint8_t exit_code, int cleanup_mode[2])
+uint8_t	clean(t_state *state, const uint8_t exit_code, int cleanup_mode[2])
 {
 	int		stage;
 
@@ -53,8 +59,8 @@ void	clean_exit(t_state *state, const uint8_t exit_code, int cleanup_mode[2])
 		free(state);
 	}
 	if (cleanup_mode[STAGE] == PARSE)
-		exit_with_instructions(exit_code);
-	exit(exit_code);
+		display_instructions();
+	return (exit_code);
 }
 
 static void	cleanup_state(t_state *state)
@@ -84,18 +90,13 @@ static void	destroy_mutexes(t_state *state, int ph_count)
 		pthread_mutex_destroy(state->mt_dflag);
 }
 
-void	exit_with_instructions(const uint8_t exit_code)
+void	display_instructions(void)
 {
-	int		bytes;
-
-	bytes = printf("%s%s%s%s%s%s", \
+	printf("%s%s%s%s%s%s", \
 "Usage: ./philosophers <following arguments>\n", \
-"<int: number of philosophers>\n", \
-"<int: time to die (ms)>\n", \
-"<int: time to eat (ms)>\n", \
-"<int: time to sleep (ms)>\n", \
-"<(Optional) int: times a philosopher must eat>\n");
-	if (bytes < 0)
-		exit(EIO);
-	exit(exit_code);
+"<non-negative int: number of philosophers>\n", \
+"<non-negative int: time to die (ms)>\n", \
+"<non-negative int: time to eat (ms)>\n", \
+"<non-negative int: time to sleep (ms)>\n", \
+"<(Optional) non-negative int: times a philosopher must eat>\n");
 }

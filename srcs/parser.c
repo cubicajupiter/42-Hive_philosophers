@@ -13,25 +13,28 @@
 #include "philosophers.h"
 
 static int	check_arg(const char *arg);
-static int	ft_atoi(t_state *state, const char *str);
+static uint64_t	ft_atoi(const char *str);
 static bool	is_digit(const int c);
 
-void	init_parsed_args(int ac, char **av, t_state *state)
+uint8_t	init_parsed_args(int ac, char **av, t_state *state)
 {
-	int			data;
+	uint64_t	data;
 	int			i;
 
 	i = 1;
 	while (i < ac)
 	{
 		if (check_arg(av[i]) == EINVAL)
-			clean_exit(state, EINVAL, (int[]){0, PARSE});
-		data = ft_atoi(state, av[i]);
-		state->init_data[i - 1] = data;
+			return (clean(state, EINVAL, (int[]){0, PARSE}));
+		data = ft_atoi(av[i]);
+		if (data > INT_MAX)
+			return (clean(state, EINVAL, (int[]){0, PARSE}));
+		state->init_data[i - 1] = (int)data;
 		i++;
 	}
 	if (ac == 5)
 		state->init_data[i - 1] = -1;
+	return (SUCCESS);
 }
 
 static int	check_arg(const char *arg)
@@ -45,12 +48,14 @@ static int	check_arg(const char *arg)
 			return (EINVAL);
 		i++;
 	}
+	if (i > 10)
+		return (EINVAL);
 	return (SUCCESS);
 }
 
-static int	ft_atoi(t_state *state, const char *str)
+static uint64_t	ft_atoi(const char *str)
 {
-	unsigned long		value;
+	uint64_t			value;
 	int					i;
 
 	i = 0;
@@ -62,9 +67,7 @@ static int	ft_atoi(t_state *state, const char *str)
 			value *= 10;
 		i++;
 	}
-	if (value > INT_MAX) //what if digits overflow even unsigned int?
-		clean_exit(state, EINVAL, (int[]){0, PARSE});
-	return ((int)value);
+	return (value);
 }
 
 static bool	is_digit(const int c)

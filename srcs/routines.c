@@ -53,10 +53,10 @@ void	*dine(void *arg)
 
 static void	*ph_solo(t_philo *philo)
 {
-	uint64_t			timestamp;
+	int64_t			timestamp;
 
 	timestamp = get_time(*philo->init_time);
-	pthread_mutex_lock(philo->mutex[OWN_FORK]);
+	pthread_mutex_lock(philo->mutex[L_FORK]);
 	printf("%ld %d %s\n", timestamp, philo->no, "picked up a fork");
 	usleep(philo->init_data[TTO_DIE] * 1000);
 	timestamp = get_time(*philo->init_time);
@@ -66,28 +66,29 @@ static void	*ph_solo(t_philo *philo)
 
 static int	ph_eat(t_philo *philo, const int time_len)
 {
-	uint64_t			timestamp;
+	int64_t			timestamp;
 
-	if (dine_or_done(philo) == DONE)
+	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
 		return (DONE);
-	if (mt_lock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK], philo) == DONE)
+	if (mt_lock_forks(philo->mutex[L_FORK], philo->mutex[R_FORK], philo) == DONE)
 		return (DONE);
+	philo->last_eaten = EATING;
 	timestamp = get_time(*philo->init_time);
 	mt_putlog(timestamp, philo->no, "is eating\n", philo->mutex[LOG]);
 	usleep(time_len * 1000);
-	mt_unlock_forks(philo->mutex[OWN_FORK], philo->mutex[NEXT_FORK]);
+	mt_unlock_forks(philo->mutex[L_FORK], philo->mutex[R_FORK]);
 	philo->is_forkmtx[0] = false;
 	philo->is_forkmtx[1] = false;
 	philo->n_eaten++;
 	philo->last_eaten = get_time(*philo->init_time);
-	return (dine_or_done(philo));
+	return (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false);
 }
 
 static int	ph_idle(t_philo *philo, const int time_len)
 {
-	uint64_t			timestamp;
+	int64_t			timestamp;
 
-	if (dine_or_done(philo) == DONE)
+	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
 		return (DONE);
 	if (time_len)
 	{
@@ -100,31 +101,5 @@ static int	ph_idle(t_philo *philo, const int time_len)
 		timestamp = get_time(*philo->init_time);
 		mt_putlog(timestamp, philo->no, "is thinking\n", philo->mutex[LOG]);
 	}
-	return (dine_or_done(philo));
-}
-
-int	dine_or_done(t_philo *philo)
-{
-	uint64_t			timestamp;
-
-	timestamp = get_time(*philo->init_time);
-	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
-	{
-		if (philo->is_forkmtx[0] == true)
-			pthread_mutex_unlock(philo->mutex[OWN_FORK]);
-		if (philo->is_forkmtx[1] == true)
-			pthread_mutex_unlock(philo->mutex[NEXT_FORK]);
-		return (DONE);
-	}
-	if ((int)(timestamp - philo->last_eaten) >= philo->init_data[TTO_DIE])
-	{
-		mt_diners_flag_store(philo->dine, DEAD + philo->no, philo->mutex[DFLAG]);
-		if (philo->is_forkmtx[0] == true)
-			pthread_mutex_unlock(philo->mutex[OWN_FORK]);
-		if (philo->is_forkmtx[1] == true)
-			pthread_mutex_unlock(philo->mutex[NEXT_FORK]);
-		//mt_putlog(timestamp, philo, "died\n", philo->mutex[LOG]);
-		return (DONE);
-	}
-	return (DINE);
+	return (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false);
 }

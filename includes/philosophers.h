@@ -23,36 +23,31 @@
 # include <unistd.h>
 
 //main.c
-void		clean_exit(t_state *state, const uint8_t exit_code, int cleanup_mode[2]);
-void		exit_with_instructions(const uint8_t exit_code);
-void		joiner(const t_state *state, int n_pthreads);
+uint8_t		clean(t_state *state, const uint8_t exit_code, int cleanup_mode[2]);
+void		display_instructions(void);
 
 //parser.c
-void		init_parsed_args(int ac, char **av, t_state *state);
+uint8_t		init_parsed_args(int ac, char **av, t_state *state);
 
 //inits.c
-void		initialize(int ac, char **av, t_state **state);
-void		init_state(t_state *state);
-void		init_philos(t_state *state);
-void		init_mutexes(t_state *state);
+uint8_t		initialize(int ac, char **av, t_state **state);
 
 //run_sim.c
-void		run_sim(t_state *state);
-uint64_t	get_time(const uint64_t init_time); //temp here
+uint8_t		run_sim(t_state *state);
+void		joiner(const t_state *state, int n_pthreads);
+int64_t		get_time(const int64_t init_time);
 
 //routines.c
 void		*dine(void *arg);
-int			dine_or_done(t_philo *philo);
 
 //waiter.c
 void		*monitor(void *arg);
-void		mt_diners_flag_store(int *flag, int value, pthread_mutex_t *mutex);
 
 //mutex.c
 void	mt_boolean_store(bool *b, bool value, pthread_mutex_t *mutex);
 bool	mt_boolean_load(bool *b, pthread_mutex_t *mutex);
-void	mt_putlog(uint64_t timestamp, int no, char *log, pthread_mutex_t *mutex);
-int		mt_lock_forks(pthread_mutex_t *own, pthread_mutex_t *next, t_philo *philo);
-void	mt_unlock_forks(pthread_mutex_t *own, pthread_mutex_t *next);
+void	mt_putlog(int64_t timestamp, int no, char *log, pthread_mutex_t *mutex);
+int		mt_lock_forks(pthread_mutex_t *l, pthread_mutex_t *r, t_philo *philo);
+void	mt_unlock_forks(pthread_mutex_t *l, pthread_mutex_t *r);
 
 #endif

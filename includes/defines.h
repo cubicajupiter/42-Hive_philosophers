@@ -46,6 +46,7 @@
 # define STAGE			1
 
 //DINERS' FLAGS
+# define EATING			-1
 # define DINE			0
 # define DONE			1
 # define DEAD			2
@@ -63,8 +64,8 @@ enum e_mutex_t
 	SIM,
 	LOG,
 	DFLAG,
-	OWN_FORK,
-	NEXT_FORK,
+	L_FORK,
+	R_FORK,
 };
 
 struct s_state
@@ -78,7 +79,7 @@ struct s_state
 	pthread_mutex_t		*mt_dflag;
 	bool				*is_running;
 	int					*dine;
-	uint64_t			*init_time;
+	int64_t				*init_time;
 };
 
 struct s_philo
@@ -86,8 +87,8 @@ struct s_philo
 	int					no;
 	int					n_eaten;
 	int					*init_data;
-	uint64_t			*init_time;
-	uint64_t			last_eaten;
+	int64_t				*init_time;
+	int64_t				last_eaten;
 	bool				*is_running;
 	int					*dine;
 	pthread_mutex_t		*mutex[5];
