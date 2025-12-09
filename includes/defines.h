@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:13:11 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/25 13:45:15 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/01 13:45:54 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 # include <pthread.h>
 # include <stdint.h>
 # include <stdbool.h>
+
+# define MAX_THREADS	10001
 
 //INIT_DATA CONSTANTS
 # define N_PHILO		0
@@ -54,7 +56,6 @@
 typedef struct s_state		t_state;
 typedef struct s_fork		t_fork;
 typedef struct s_philo		t_philo;
-typedef struct s_queue		t_queue;
 
 typedef enum e_status		t_status;
 typedef enum e_mutex_t		t_mutex_t;
@@ -63,7 +64,6 @@ enum e_mutex_t
 {
 	SIM,
 	LOG,
-	DFLAG,
 	L_FORK,
 	R_FORK,
 };
@@ -76,29 +76,19 @@ struct s_state
 	pthread_mutex_t		*forks;
 	pthread_mutex_t		*mt_sim;
 	pthread_mutex_t		*mt_log;
-	pthread_mutex_t		*mt_dflag;
 	bool				*is_running;
-	int					*dine;
 	int64_t				*init_time;
 };
 
 struct s_philo
 {
 	int					no;
-	int					n_eaten;
 	int					*init_data;
 	int64_t				*init_time;
 	int64_t				last_eaten;
 	bool				*is_running;
-	int					*dine;
-	pthread_mutex_t		*mutex[5];
+	pthread_mutex_t		*mutex[4];
 	bool				is_forkmtx[2];
-};
-
-struct s_queue
-{
-	int					data[3];
-	t_queue				*next;
 };
 
 #endif

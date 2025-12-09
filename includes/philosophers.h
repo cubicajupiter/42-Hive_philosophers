@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:59:46 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/19 16:20:48 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/01 13:43:39 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,25 +23,25 @@
 # include <unistd.h>
 
 //main.c
-uint8_t		clean(t_state *state, const uint8_t exit_code, int cleanup_mode[2]);
-void		display_instructions(void);
+uint8_t	clean(t_state *state, const uint8_t exit_code, int cleanup_mode[2]);
+void	display_instructions(void);
 
 //parser.c
-uint8_t		init_parsed_args(int ac, char **av, t_state *state);
+uint8_t	init_parsed_args(int ac, char **av, t_state *state);
 
 //inits.c
-uint8_t		initialize(int ac, char **av, t_state **state);
+uint8_t	initialize(int ac, char **av, t_state **state);
 
 //run_sim.c
-uint8_t		run_sim(t_state *state);
-void		joiner(const t_state *state, int n_pthreads);
-int64_t		get_time(const int64_t init_time);
+uint8_t	run_sim(t_state *state);
+void	joiner(const t_state *state, int n_pthreads);
+int64_t	get_time(const int64_t init_time);
 
 //routines.c
-void		*dine(void *arg);
+void	*dine(void *arg);
 
 //waiter.c
-void		*monitor(void *arg);
+void	*monitor(void *arg);
 
 //mutex.c
 void	mt_boolean_store(bool *b, bool value, pthread_mutex_t *mutex);

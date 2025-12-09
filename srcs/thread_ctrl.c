@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   run_sim.c                                          :+:      :+:    :+:   */
+/*   thread_ctrl.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:50 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/20 17:30:48 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/01 13:46:49 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ static uint8_t		dispatcher(t_state *state);
 
 uint8_t	run_sim(t_state *state)
 {
-	pthread_t		threads[state->init_data[N_PHILO] + 1];
+	pthread_t		threads[MAX_THREADS];
 	uint8_t			result;
 
 	state->threads = threads;
@@ -35,11 +35,11 @@ static uint8_t	dispatcher(t_state *state)
 	while (i < state->init_data[N_PHILO])
 	{
 		if (pthread_create(&state->threads[i], NULL, dine, &state->philos[i]))
-			return (clean(state, PTC_ERR, (int[]){i, THREADS}));
+			return (clean(state, PTC_ERR, (int []){i, THREADS}));
 		i++;
 	}
 	if (pthread_create(&state->threads[i], NULL, monitor, state))
-		return (clean(state, PTC_ERR, (int[]){i, THREADS}));
+		return (clean(state, PTC_ERR, (int []){i, THREADS}));
 	return (SUCCESS);
 }
 

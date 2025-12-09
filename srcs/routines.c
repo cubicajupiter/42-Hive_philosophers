@@ -6,19 +6,20 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:45 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/27 12:08:04 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/01 13:52:35 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-static void		*ph_solo(t_philo *philo);
-static int		ph_eat(t_philo *philo, const int tto);
-static int		ph_idle(t_philo *philo, const int time_len);
+static inline void		main_routine(t_philo *p);
+static void			*ph_solo(t_philo *p);
+static int			ph_eat(t_philo *p, const int time_len, int *n_eaten);
+static int			ph_idle(t_philo *p, const int time_len);
 
 void	*dine(void *arg)
 {
-	t_philo 		*philo;
+	t_philo			*philo;
 	int				timeout;
 
 	philo = (t_philo *)arg;
@@ -35,71 +36,75 @@ void	*dine(void *arg)
 		return (ph_solo(philo));
 	if (philo->no % 2 == 1)
 		usleep(150);
-	while (mt_boolean_load(philo->is_running, philo->mutex[SIM]))
+	main_routine(philo);
+	return (NULL);
+}
+
+static inline void	main_routine(t_philo *p)
+{
+	int		n_eaten;
+
+	n_eaten = 0;
+	while (mt_boolean_load(p->is_running, p->mutex[SIM]))
 	{
-		if (philo->no % 2 == 1 && philo->n_eaten != 0)
-			usleep(philo->init_data[TTO_EAT] / 2 * 1000);
-		if (ph_eat(philo, philo->init_data[TTO_EAT]) == DONE)
+		if (p->no % 2 == 1)
+		{
+			if (!n_eaten)
+				mt_putlog(get_time(*p->init_time), p->no, "is thinking\n", p->mutex[LOG]);
+			else
+				usleep(300);
+		}
+		if (ph_eat(p, p->init_data[TTO_EAT], &n_eaten) == DONE)
 			break ;
-		if (philo->n_eaten == philo->init_data[N_EAT])
+		if (n_eaten == p->init_data[N_EAT])
 			break ;
-		if (ph_idle(philo, philo->init_data[TTO_SLEEP]) == DONE)
+		if (ph_idle(p, p->init_data[TTO_SLEEP]) == DONE)
 			break ;
-		if (ph_idle(philo, 0) == DONE)
+		if (ph_idle(p, 0) == DONE)
 			break ;
 	}
-	return (NULL);
 }
 
-static void	*ph_solo(t_philo *philo)
+static void	*ph_solo(t_philo *p)
 {
 	int64_t			timestamp;
 
-	timestamp = get_time(*philo->init_time);
-	pthread_mutex_lock(philo->mutex[L_FORK]);
-	printf("%ld %d %s\n", timestamp, philo->no, "picked up a fork");
-	usleep(philo->init_data[TTO_DIE] * 1000);
-	timestamp = get_time(*philo->init_time);
-	printf("%ld %d %s\n", timestamp, philo->no, "has died");
+	timestamp = get_time(*p->init_time);
+	pthread_mutex_lock(p->mutex[L_FORK]);
+	printf("%ld %d %s\n", timestamp, p->no, "has taken a fork");
+	usleep(p->init_data[TTO_DIE] * 1000);
+	timestamp = get_time(*p->init_time);
 	return (NULL);
 }
 
-static int	ph_eat(t_philo *philo, const int time_len)
+static int	ph_eat(t_philo *p, const int time_len, int *n_eaten)
 {
-	int64_t			timestamp;
-
-	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
+	if (mt_boolean_load(p->is_running, p->mutex[SIM]) == false)
 		return (DONE);
-	if (mt_lock_forks(philo->mutex[L_FORK], philo->mutex[R_FORK], philo) == DONE)
+	if (mt_lock_forks(p->mutex[L_FORK], p->mutex[R_FORK], p) == DONE)
 		return (DONE);
-	philo->last_eaten = EATING;
-	timestamp = get_time(*philo->init_time);
-	mt_putlog(timestamp, philo->no, "is eating\n", philo->mutex[LOG]);
+	p->last_eaten = get_time(*p->init_time);
+	mt_putlog(p->last_eaten, p->no, "is eating\n", p->mutex[LOG]);
 	usleep(time_len * 1000);
-	mt_unlock_forks(philo->mutex[L_FORK], philo->mutex[R_FORK]);
-	philo->is_forkmtx[0] = false;
-	philo->is_forkmtx[1] = false;
-	philo->n_eaten++;
-	philo->last_eaten = get_time(*philo->init_time);
-	return (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false);
+	mt_unlock_forks(p->mutex[L_FORK], p->mutex[R_FORK]);
+	p->is_forkmtx[0] = false;
+	p->is_forkmtx[1] = false;
+	(*n_eaten)++;
+	return (mt_boolean_load(p->is_running, p->mutex[SIM]) == false);
 }
 
-static int	ph_idle(t_philo *philo, const int time_len)
+static int	ph_idle(t_philo *p, const int time_len)
 {
-	int64_t			timestamp;
-
-	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
+	if (mt_boolean_load(p->is_running, p->mutex[SIM]) == false)
 		return (DONE);
 	if (time_len)
 	{
-		timestamp = get_time(*philo->init_time);
-		mt_putlog(timestamp, philo->no, "is sleeping\n", philo->mutex[LOG]);
-		usleep(time_len * 1000);
+		mt_putlog(get_time(*p->init_time), p->no, "is sleeping\n", p->mutex[LOG]);
+		usleep(time_len * 1000);//it should be able to die while sleeping.
 	}
 	else
 	{
-		timestamp = get_time(*philo->init_time);
-		mt_putlog(timestamp, philo->no, "is thinking\n", philo->mutex[LOG]);
+		mt_putlog(get_time(*p->init_time), p->no, "is thinking\n", p->mutex[LOG]);
 	}
-	return (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false);
+	return (mt_boolean_load(p->is_running, p->mutex[SIM]) == false);
 }

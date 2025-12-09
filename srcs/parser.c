@@ -6,15 +6,15 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 10:28:09 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/18 18:33:39 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/01 13:45:51 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-static int	check_arg(const char *arg);
+static int		check_arg(const char *arg);
 static uint64_t	ft_atoi(const char *str);
-static bool	is_digit(const int c);
+static bool		is_digit(const int c);
 
 uint8_t	init_parsed_args(int ac, char **av, t_state *state)
 {
@@ -25,10 +25,12 @@ uint8_t	init_parsed_args(int ac, char **av, t_state *state)
 	while (i < ac)
 	{
 		if (check_arg(av[i]) == EINVAL)
-			return (clean(state, EINVAL, (int[]){0, PARSE}));
+			return (clean(state, EINVAL, (int []){0, PARSE}));
 		data = ft_atoi(av[i]);
+		if (i == 1 && data > 10000)
+			return (clean(state, EINVAL, (int []){0, PARSE}));
 		if (data > INT_MAX)
-			return (clean(state, EINVAL, (int[]){0, PARSE}));
+			return (clean(state, EINVAL, (int []){0, PARSE}));
 		state->init_data[i - 1] = (int)data;
 		i++;
 	}
@@ -42,7 +44,7 @@ static int	check_arg(const char *arg)
 	size_t		i;
 
 	i = 0;
-	while(arg[i])
+	while (arg[i])
 	{
 		if (!is_digit(arg[i]))
 			return (EINVAL);

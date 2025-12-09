@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:40:23 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/11/18 16:11:23 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/01 13:42:02 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int	main(int ac, char **av)
 			return (result);
 		result = run_sim(state);
 		if (result == SUCCESS)
-			clean(state, SUCCESS, (int[]){ALL, END});
+			clean(state, SUCCESS, (int []){ALL, END});
 		return ((int)result);
 	}
 	else
@@ -66,13 +66,11 @@ uint8_t	clean(t_state *state, const uint8_t exit_code, int cleanup_mode[2])
 static void	cleanup_state(t_state *state)
 {
 	free(state->is_running);
-	free(state->dine);
 	free(state->init_time);
 	free(state->philos);
 	free(state->forks);
 	free(state->mt_sim);
 	free(state->mt_log);
-	free(state->mt_dflag);
 }
 
 static void	destroy_mutexes(t_state *state, int ph_count)
@@ -82,19 +80,17 @@ static void	destroy_mutexes(t_state *state, int ph_count)
 	i = ph_count - 1;
 	while (i >= 0)
 		pthread_mutex_destroy(&state->forks[i--]);
-	if (i-- >= -3)
+	if (i-- >= -2)
 		pthread_mutex_destroy(state->mt_sim);
-	if (i-- >= -3)
+	if (i-- >= -2)
 		pthread_mutex_destroy(state->mt_log);
-	if (i-- >= -3)
-		pthread_mutex_destroy(state->mt_dflag);
 }
 
 void	display_instructions(void)
 {
 	printf("%s%s%s%s%s%s", \
 "Usage: ./philosophers <following arguments>\n", \
-"<non-negative int: number of philosophers>\n", \
+"<non-negative int: number of philosophers (max. 10 000)>\n", \
 "<non-negative int: time to die (ms)>\n", \
 "<non-negative int: time to eat (ms)>\n", \
 "<non-negative int: time to sleep (ms)>\n", \

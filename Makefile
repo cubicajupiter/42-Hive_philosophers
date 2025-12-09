@@ -6,7 +6,7 @@
 #    By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/11/18 12:06:00 by jvalkama          #+#    #+#              #
-#    Updated: 2025/11/20 17:13:17 by jvalkama         ###   ########.fr        #
+#    Updated: 2025/12/01 13:48:07 by jvalkama         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,8 @@ NAME			:=philo
 
 SRCDIR			:=srcs
 VPATH			:=$(SRCDIR)
-SRCS			:=main.c inits.c parser.c run_sim.c routines.c waiter.c mutex.c
+SRCS			:=main.c inits.c parser.c thread_ctrl.c \
+					routines.c monitor.c mutex.c
 
 OBJDIR			:=objs
 OBJS			:=$(addprefix $(OBJDIR)/, $(SRCS:.c=.o))
