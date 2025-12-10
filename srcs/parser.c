@@ -27,7 +27,7 @@ uint8_t	init_parsed_args(int ac, char **av, t_state *state)
 		if (check_arg(av[i]) == EINVAL)
 			return (clean(state, EINVAL, (int []){0, PARSE}));
 		data = ft_atoi(av[i]);
-		if (i == 1 && data > 10000)
+		if (i == 1 && data > 200)
 			return (clean(state, EINVAL, (int []){0, PARSE}));
 		if (data > INT_MAX)
 			return (clean(state, EINVAL, (int []){0, PARSE}));

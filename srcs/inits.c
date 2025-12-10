@@ -38,6 +38,7 @@ uint8_t	initialize(int ac, char **av, t_state **state)
 
 static uint8_t	init_state(t_state *state)
 {
+	memset(state->queue, 0, sizeof(state->queue));
 	state->is_running = malloc(sizeof(bool));
 	*state->is_running = false;
 	state->init_time = malloc(sizeof(int64_t));
@@ -53,31 +54,37 @@ static uint8_t	init_state(t_state *state)
 
 static void	init_philos(t_state *state)
 {
-	int				i;
-	int				n_philo;
+	int			i;
+	int			n_philo;
 
 	i = 0;
 	n_philo = state->init_data[N_PHILO];
 	while (i < n_philo)
 	{
+		init_philomtx(state, i);
 		state->philos[i].no = i + 1;
 		state->philos[i].init_data = state->init_data;
 		state->philos[i].is_running = state->is_running;
-		state->philos[i].mutex[SIM] = state->mt_sim;
-		state->philos[i].mutex[LOG] = state->mt_log;
-		if (i % 2 == 0)
-			state->philos[i].mutex[L_FORK] = &state->forks[i];
-		else
-			state->philos[i].mutex[L_FORK] = &state->forks[(i + 1) % n_philo];
-		if (i % 2 == 0)
-			state->philos[i].mutex[R_FORK] = &state->forks[(i + 1) % n_philo];
-		else
-			state->philos[i].mutex[R_FORK] = &state->forks[i];
 		state->philos[i].init_time = state->init_time;
 		state->philos[i].last_eaten = 0;
 		state->philos[i].is_forkmtx[0] = false;
-		state->philos[i++].is_forkmtx[1] = false;
+		state->philos[i].is_forkmtx[1] = false;
+		state->philos[i].q_tailptr = state->q_tailptr;
 	}
+}
+
+static void	init_philomtx(t_state *state, int i)
+{
+	state->philos[i].mutex[SIM] = state->mt_sim;
+	state->philos[i].mutex[LOG] = state->mt_log;
+	if (i % 2 == 0)
+		state->philos[i].mutex[L_FORK] = &state->forks[i];
+	else
+		state->philos[i].mutex[L_FORK] = &state->forks[(i + 1) % n_philo];
+	if (i % 2 == 0)
+		state->philos[i].mutex[R_FORK] = &state->forks[(i + 1) % n_philo];
+	else
+		state->philos[i].mutex[R_FORK] = &state->forks[i];
 }
 
 static uint8_t	init_mutexes(t_state *state)

@@ -90,7 +90,7 @@ void	display_instructions(void)
 {
 	printf("%s%s%s%s%s%s", \
 "Usage: ./philosophers <following arguments>\n", \
-"<non-negative int: number of philosophers (max. 10 000)>\n", \
+"<non-negative int: number of philosophers (max. 200)>\n", \
 "<non-negative int: time to die (ms)>\n", \
 "<non-negative int: time to eat (ms)>\n", \
 "<non-negative int: time to sleep (ms)>\n", \

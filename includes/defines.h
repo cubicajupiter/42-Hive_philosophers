@@ -54,8 +54,8 @@
 # define DEAD			2
 
 typedef struct s_state		t_state;
-typedef struct s_fork		t_fork;
 typedef struct s_philo		t_philo;
+typedef struct s_qitem		t_qitem;
 
 typedef enum e_status		t_status;
 typedef enum e_mutex_t		t_mutex_t;
@@ -78,6 +78,9 @@ struct s_state
 	pthread_mutex_t		*mt_log;
 	bool				*is_running;
 	int64_t				*init_time;
+	t_qitem				queue[2000];
+	int					*q_tailptr;
+	int					*q_headptr;
 };
 
 struct s_philo
@@ -89,6 +92,13 @@ struct s_philo
 	bool				*is_running;
 	pthread_mutex_t		*mutex[4];
 	bool				is_forkmtx[2];
+	int					*q_tailptr;
+};
+
+struct s_qitem
+{
+	int			data[3];
+	t_qitem		next;
 };
 
 #endif
