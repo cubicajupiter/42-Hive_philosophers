@@ -18,7 +18,7 @@
 # include <stdint.h>
 # include <stdbool.h>
 
-# define MAX_THREADS	10001
+# define MAX_THREADS	1001
 
 //INIT_DATA CONSTANTS
 # define N_PHILO		0
@@ -28,10 +28,9 @@
 # define N_EAT			4
 
 //STATUS CODES
-# define ERROR			1
-# define PMI_ERR		2
-# define PTC_ERR		3
-# define MAL_ERR		4
+# define PMI_ERR		1
+# define PTC_ERR		2
+# define MAL_ERR		3
 # define SUCCESS		0
 
 //ERROR MODES
@@ -47,11 +46,19 @@
 # define PH_COUNT		0
 # define STAGE			1
 
-//DINERS' FLAGS
-# define EATING			-1
+//SIMULATION FLAGS
 # define DINE			0
 # define DONE			1
 # define DEAD			2
+
+//LOG FLAGS
+# define THINKING		0
+# define EATING			1
+# define FORK			2
+# define SLEEPING		3
+
+//QUEUE FLAG
+# define EMPTY			0
 
 typedef struct s_state		t_state;
 typedef struct s_philo		t_philo;
@@ -78,9 +85,9 @@ struct s_state
 	pthread_mutex_t		*mt_log;
 	bool				*is_running;
 	int64_t				*init_time;
-	t_qitem				queue[2000];
-	int					*q_tailptr;
-	int					*q_headptr;
+	int					queue[2000][3];
+	int					q_tail_idx;
+	int					q_head_idx;
 };
 
 struct s_philo
@@ -89,16 +96,12 @@ struct s_philo
 	int					*init_data;
 	int64_t				*init_time;
 	int64_t				last_eaten;
+	bool				is_full;
 	bool				*is_running;
 	pthread_mutex_t		*mutex[4];
 	bool				is_forkmtx[2];
-	int					*q_tailptr;
-};
-
-struct s_qitem
-{
-	int			data[3];
-	t_qitem		next;
+	int					(*queue)[3];
+	int					*q_tail_idx;
 };
 
 #endif

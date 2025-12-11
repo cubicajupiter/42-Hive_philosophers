@@ -29,10 +29,16 @@ bool	mt_boolean_load(bool *b, pthread_mutex_t *mutex)
 	return (boolean);
 }
 
-void	mt_putlog(int64_t timestamp, int no, char *log, pthread_mutex_t *mutex)
+void	mt_put(t_philo *p, int ts, int msg, pthread_mutex_t *mutex)
 {
+	int			i;
+
 	pthread_mutex_lock(mutex);
-	printf("%ld %d %s", timestamp, no, log);
+	i = *p->q_tail_idx;
+	p->queue[i][0] = ts;
+	p->queue[i][1] = p->no;
+	p->queue[i][2] = msg;
+	*p->q_tail_idx = (i + 1) % 2000;
 	pthread_mutex_unlock(mutex);
 }
 
@@ -42,14 +48,12 @@ int	mt_lock_forks(pthread_mutex_t *l, pthread_mutex_t *r, t_philo *philo)
 	philo->is_forkmtx[0] = true;
 	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
 		return (DONE);
-	mt_putlog(get_time(*philo->init_time), \
-philo->no, "has taken a fork\n", philo->mutex[LOG]);
+	mt_put(philo, (int)get_time(*philo->init_time), FORK, philo->mutex[LOG]);
 	pthread_mutex_lock(r);
 	philo->is_forkmtx[1] = true;
 	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
 		return (DONE);
-	mt_putlog(get_time(*philo->init_time), \
-philo->no, "has taken a fork\n", philo->mutex[LOG]);
+	mt_put(philo, (int)get_time(*philo->init_time), FORK, philo->mutex[LOG]);
 	return (DINE);
 }
 

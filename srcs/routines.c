@@ -50,17 +50,21 @@ static inline void	main_routine(t_philo *p)
 		if (p->no % 2 == 1)
 		{
 			if (!n_eaten)
-				mt_putlog(get_time(*p->init_time), p->no, "is thinking\n", p->mutex[LOG]);
+				mt_put(p, \
+(int)get_time(*p->init_time), THINKING, p->mutex[LOG]);
 			else
 				usleep(300);
 		}
 		if (ph_eat(p, p->init_data[TTO_EAT], &n_eaten) == DONE)
 			break ;
 		if (n_eaten == p->init_data[N_EAT])
+		{
+			p->is_full = true;
 			break ;
+		}
 		if (ph_idle(p, p->init_data[TTO_SLEEP]) == DONE)
 			break ;
-		if (ph_idle(p, 0) == DONE)
+		if (ph_idle(p, THINKING) == DONE)
 			break ;
 	}
 }
@@ -84,7 +88,7 @@ static int	ph_eat(t_philo *p, const int time_len, int *n_eaten)
 	if (mt_lock_forks(p->mutex[L_FORK], p->mutex[R_FORK], p) == DONE)
 		return (DONE);
 	p->last_eaten = get_time(*p->init_time);
-	mt_putlog(p->last_eaten, p->no, "is eating\n", p->mutex[LOG]);
+	mt_put(p, (int)p->last_eaten, EATING, p->mutex[LOG]);
 	usleep(time_len * 1000);
 	mt_unlock_forks(p->mutex[L_FORK], p->mutex[R_FORK]);
 	p->is_forkmtx[0] = false;
@@ -99,12 +103,12 @@ static int	ph_idle(t_philo *p, const int time_len)
 		return (DONE);
 	if (time_len)
 	{
-		mt_putlog(get_time(*p->init_time), p->no, "is sleeping\n", p->mutex[LOG]);
-		usleep(time_len * 1000);//it should be able to die while sleeping.
+		mt_put(p, (int)get_time(*p->init_time), SLEEPING, p->mutex[LOG]);
+		usleep(time_len * 1000);
 	}
 	else
 	{
-		mt_putlog(get_time(*p->init_time), p->no, "is thinking\n", p->mutex[LOG]);
+		mt_put(p, (int)get_time(*p->init_time), THINKING, p->mutex[LOG]);
 	}
 	return (mt_boolean_load(p->is_running, p->mutex[SIM]) == false);
 }

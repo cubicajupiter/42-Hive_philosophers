@@ -89,10 +89,10 @@ static void	destroy_mutexes(t_state *state, int ph_count)
 void	display_instructions(void)
 {
 	printf("%s%s%s%s%s%s", \
-"Usage: ./philosophers <following arguments>\n", \
-"<non-negative int: number of philosophers (max. 200)>\n", \
-"<non-negative int: time to die (ms)>\n", \
-"<non-negative int: time to eat (ms)>\n", \
-"<non-negative int: time to sleep (ms)>\n", \
-"<(Optional) non-negative int: times a philosopher must eat>\n");
+"Usage: ./philo <following arguments>\n", \
+"<positive int: number of philosophers (max 1000)>\n", \
+"<positive int: time to die (ms)>\n", \
+"<positive int: time to eat (ms)>\n", \
+"<positive int: time to sleep (ms)>\n", \
+"<(Optional) positive int: times a philosopher must eat>\n");
 }

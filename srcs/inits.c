@@ -14,6 +14,7 @@
 
 static uint8_t	init_state(t_state *state);
 static void		init_philos(t_state *state);
+static void		init_philomtx(t_state *state, int i, int n_philo);
 static uint8_t	init_mutexes(t_state *state);
 
 uint8_t	initialize(int ac, char **av, t_state **state)
@@ -38,9 +39,7 @@ uint8_t	initialize(int ac, char **av, t_state **state)
 
 static uint8_t	init_state(t_state *state)
 {
-	memset(state->queue, 0, sizeof(state->queue));
 	state->is_running = malloc(sizeof(bool));
-	*state->is_running = false;
 	state->init_time = malloc(sizeof(int64_t));
 	state->philos = malloc((state->init_data[N_PHILO]) * sizeof(t_philo));
 	state->forks = malloc(state->init_data[N_PHILO] * sizeof(pthread_mutex_t));
@@ -49,6 +48,10 @@ static uint8_t	init_state(t_state *state)
 	if (!state->philos || !state->forks || !state->is_running \
 || !state->init_time || !state->mt_sim || !state->mt_log)
 		return (clean(state, MAL_ERR, (int []){0, SM_INIT}));
+	*state->is_running = false;
+	memset(state->queue, 0, sizeof(state->queue));
+	state->q_tail_idx = 0;
+	state->q_head_idx = 0;
 	return (SUCCESS);
 }
 
@@ -61,19 +64,22 @@ static void	init_philos(t_state *state)
 	n_philo = state->init_data[N_PHILO];
 	while (i < n_philo)
 	{
-		init_philomtx(state, i);
+		init_philomtx(state, i, n_philo);
 		state->philos[i].no = i + 1;
 		state->philos[i].init_data = state->init_data;
 		state->philos[i].is_running = state->is_running;
 		state->philos[i].init_time = state->init_time;
 		state->philos[i].last_eaten = 0;
+		state->philos[i].is_full = false;
 		state->philos[i].is_forkmtx[0] = false;
 		state->philos[i].is_forkmtx[1] = false;
-		state->philos[i].q_tailptr = state->q_tailptr;
+		state->philos[i].queue = state->queue;
+		state->philos[i].q_tail_idx = &state->q_tail_idx;
+		i++;
 	}
 }
 
-static void	init_philomtx(t_state *state, int i)
+static void	init_philomtx(t_state *state, int i, int n_philo)
 {
 	state->philos[i].mutex[SIM] = state->mt_sim;
 	state->philos[i].mutex[LOG] = state->mt_log;
