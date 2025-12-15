@@ -73,6 +73,7 @@ enum e_mutex_t
 	LOG,
 	L_FORK,
 	R_FORK,
+	PHILO
 };
 
 struct s_state
@@ -98,7 +99,7 @@ struct s_philo
 	int64_t				last_eaten;
 	bool				is_full;
 	bool				*is_running;
-	pthread_mutex_t		*mutex[4];
+	pthread_mutex_t		*mutex[5];
 	bool				is_forkmtx[2];
 	int					(*queue)[3];
 	int					*q_tail_idx;

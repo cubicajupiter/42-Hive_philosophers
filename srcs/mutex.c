@@ -59,6 +59,6 @@ int	mt_lock_forks(pthread_mutex_t *l, pthread_mutex_t *r, t_philo *philo)
 
 void	mt_unlock_forks(pthread_mutex_t *l, pthread_mutex_t *r)
 {
-	pthread_mutex_unlock(l);
 	pthread_mutex_unlock(r);
+	pthread_mutex_unlock(l);
 }

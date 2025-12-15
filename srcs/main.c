@@ -79,7 +79,12 @@ static void	destroy_mutexes(t_state *state, int ph_count)
 
 	i = ph_count - 1;
 	while (i >= 0)
-		pthread_mutex_destroy(&state->forks[i--]);
+	{
+		pthread_mutex_destroy(&state->forks[i]);
+		pthread_mutex_destroy(state->philos[i].mutex[PHILO]);
+		free(state->philos[i].mutex[PHILO]);
+		i--;
+	}
 	if (i-- >= -2)
 		pthread_mutex_destroy(state->mt_sim);
 	if (i-- >= -2)

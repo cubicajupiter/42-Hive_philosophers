@@ -81,13 +81,22 @@ static void	init_philos(t_state *state)
 
 static void	init_philomtx(t_state *state, const int i, int n_philo)
 {
-	int		no;
-
-	no = i + 1;
 	state->philos[i].mutex[SIM] = state->mt_sim;
 	state->philos[i].mutex[LOG] = state->mt_log;
-	state->philos[i].mutex[L_FORK] = &state->forks[i];
-	state->philos[i].mutex[R_FORK] = &state->forks[(i + 1) % n_philo];
+	if (i % 2 == 0)
+	{
+		state->philos[i].mutex[L_FORK] = &state->forks[i];
+		state->philos[i].mutex[R_FORK] = &state->forks[(i + 1) % n_philo];
+	}
+	else
+	{
+		state->philos[i].mutex[L_FORK] = &state->forks[(i + 1) % n_philo];
+		state->philos[i].mutex[R_FORK] = &state->forks[i];
+	}
+	state->philos[i].mutex[PHILO] = malloc(sizeof(pthread_mutex_t));
+	if (state->philos[i].mutex[PHILO] == NULL)
+		clean(state, MAL_ERR, (int []){i, MT_INIT});
+		
 }
 
 static uint8_t	init_mutexes(t_state *state)
@@ -102,6 +111,8 @@ static uint8_t	init_mutexes(t_state *state)
 	while (i < state->init_data[N_PHILO])
 	{
 		if (pthread_mutex_init(&state->forks[i], NULL))
+			return (clean(state, PMI_ERR, (int []){i, MT_INIT}));
+		if (pthread_mutex_init(state->philos[i].mutex[PHILO], NULL))
 			return (clean(state, PMI_ERR, (int []){i, MT_INIT}));
 		i++;
 	}

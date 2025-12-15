@@ -15,7 +15,7 @@
 static inline void		main_routine(t_philo *p);
 static void			*ph_solo(t_philo *p);
 static int			ph_eat(t_philo *p, const int time_len, int *n_eaten);
-static int			ph_idle(t_philo *p, const int time_len);
+static int			ph_idle(t_philo *p, const int time_len, int log);
 
 void	*dine(void *arg)
 {
@@ -37,10 +37,10 @@ void	*dine(void *arg)
 	if (philo->no % 2 == 1)
 		usleep(150);
 	main_routine(philo);
-	if (philo->is_forkmtx[0])
-		pthread_mutex_unlock(philo->mutex[L_FORK]);
 	if (philo->is_forkmtx[1])
 		pthread_mutex_unlock(philo->mutex[R_FORK]);
+	if (philo->is_forkmtx[0])
+		pthread_mutex_unlock(philo->mutex[L_FORK]);
 	return (NULL);
 }
 
@@ -51,24 +51,25 @@ static inline void	main_routine(t_philo *p)
 	n_eaten = 0;
 	while (mt_boolean_load(p->is_running, p->mutex[SIM]))
 	{
-		if (p->no % 2 == 1)
+		if (p->init_data[N_PHILO] % 2 == 1)
 		{
 			if (!n_eaten)
 				mt_put(p, \
 (int)get_time(*p->init_time), THINKING, p->mutex[LOG]);
 			else
-				usleep(1000);
+				ph_idle(p, \
+(p->init_data[TTO_EAT] * 2000) - (p->init_data[TTO_SLEEP] * 1000), THINKING);
 		}
 		if (ph_eat(p, p->init_data[TTO_EAT], &n_eaten) == DONE)
 			break ;
 		if (n_eaten == p->init_data[N_EAT])
 		{
-			p->is_full = true;
+			mt_boolean_store(&p->is_full, true, p->mutex[PHILO]);
 			break ;
 		}
-		if (ph_idle(p, p->init_data[TTO_SLEEP]) == DONE)
+		if (ph_idle(p, p->init_data[TTO_SLEEP], SLEEPING) == DONE)
 			break ;
-		if (ph_idle(p, THINKING) == DONE)
+		if (ph_idle(p, 0, THINKING) == DONE)
 			break ;
 	}
 }
@@ -91,7 +92,9 @@ static int	ph_eat(t_philo *p, const int time_len, int *n_eaten)
 		return (DONE);
 	if (mt_lock_forks(p->mutex[L_FORK], p->mutex[R_FORK], p) == DONE)
 		return (DONE);
+	pthread_mutex_lock(p->mutex[PHILO]);
 	p->last_eaten = get_time(*p->init_time);
+	pthread_mutex_unlock(p->mutex[PHILO]);
 	mt_put(p, (int)p->last_eaten, EATING, p->mutex[LOG]);
 	usleep(time_len * 1000);
 	mt_unlock_forks(p->mutex[L_FORK], p->mutex[R_FORK]);
@@ -101,18 +104,19 @@ static int	ph_eat(t_philo *p, const int time_len, int *n_eaten)
 	return (mt_boolean_load(p->is_running, p->mutex[SIM]) == false);
 }
 
-static int	ph_idle(t_philo *p, const int time_len)
+static int	ph_idle(t_philo *p, const int time_len, int log)
 {
 	if (mt_boolean_load(p->is_running, p->mutex[SIM]) == false)
 		return (DONE);
-	if (time_len)
+	mt_put(p, (int)get_time(*p->init_time), log, p->mutex[LOG]);
+	if (log == SLEEPING)
 	{
-		mt_put(p, (int)get_time(*p->init_time), SLEEPING, p->mutex[LOG]);
 		usleep(time_len * 1000);
 	}
-	else
+	else if (log == THINKING && time_len)
 	{
-		mt_put(p, (int)get_time(*p->init_time), THINKING, p->mutex[LOG]);
+		if (time_len > 0)
+			usleep(time_len / 2);
 	}
 	return (mt_boolean_load(p->is_running, p->mutex[SIM]) == false);
 }

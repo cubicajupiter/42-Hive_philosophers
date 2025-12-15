@@ -21,7 +21,7 @@ OBJDIR			:=objs
 OBJS			:=$(addprefix $(OBJDIR)/, $(SRCS:.c=.o))
 
 COMPILER		:=cc
-CFLAGS			:=-Wall -Wextra -Werror -O3 -march=native -pthread
+CFLAGS			:=-Wall -Wextra -Werror -O3 -march=native -pthread -g
 
 INC_DIR			:=includes
 INCLUDES		:=-I $(INC_DIR)
