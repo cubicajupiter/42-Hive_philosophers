@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: jvalkama <jvalkama@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:40:23 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/12/01 13:42:02 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/15 17:59:23 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,9 +90,9 @@ void	display_instructions(void)
 {
 	printf("%s%s%s%s%s%s", \
 "Usage: ./philo <following arguments>\n", \
-"<positive int: number of philosophers (max 1000)>\n", \
-"<positive int: time to die (ms)>\n", \
-"<positive int: time to eat (ms)>\n", \
-"<positive int: time to sleep (ms)>\n", \
-"<(Optional) positive int: times a philosopher must eat>\n");
+"< positive int: number of philosophers >\n", \
+"< positive int: time to die (ms) >\n", \
+"< positive int: time to eat (ms) >\n", \
+"< positive int: time to sleep (ms) >\n", \
+"< (Optional) positive int: times a philosopher must eat >\n");
 }

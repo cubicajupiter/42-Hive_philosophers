@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   inits.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: jvalkama <jvalkama@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 12:23:49 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/12/01 13:42:07 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/15 17:59:22 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 static uint8_t	init_state(t_state *state);
 static void		init_philos(t_state *state);
-static void		init_philomtx(t_state *state, int i, int n_philo);
+static void		init_philomtx(t_state *state, const int i, int n_philo);
 static uint8_t	init_mutexes(t_state *state);
 
 uint8_t	initialize(int ac, char **av, t_state **state)
@@ -79,18 +79,15 @@ static void	init_philos(t_state *state)
 	}
 }
 
-static void	init_philomtx(t_state *state, int i, int n_philo)
+static void	init_philomtx(t_state *state, const int i, int n_philo)
 {
+	int		no;
+
+	no = i + 1;
 	state->philos[i].mutex[SIM] = state->mt_sim;
 	state->philos[i].mutex[LOG] = state->mt_log;
-	if (i % 2 == 0)
-		state->philos[i].mutex[L_FORK] = &state->forks[i];
-	else
-		state->philos[i].mutex[L_FORK] = &state->forks[(i + 1) % n_philo];
-	if (i % 2 == 0)
-		state->philos[i].mutex[R_FORK] = &state->forks[(i + 1) % n_philo];
-	else
-		state->philos[i].mutex[R_FORK] = &state->forks[i];
+	state->philos[i].mutex[L_FORK] = &state->forks[i];
+	state->philos[i].mutex[R_FORK] = &state->forks[(i + 1) % n_philo];
 }
 
 static uint8_t	init_mutexes(t_state *state)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   routines.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: jvalkama <jvalkama@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:45 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/12/01 13:52:35 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/15 17:59:24 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,10 @@ void	*dine(void *arg)
 	if (philo->no % 2 == 1)
 		usleep(150);
 	main_routine(philo);
+	if (philo->is_forkmtx[0])
+		pthread_mutex_unlock(philo->mutex[L_FORK]);
+	if (philo->is_forkmtx[1])
+		pthread_mutex_unlock(philo->mutex[R_FORK]);
 	return (NULL);
 }
 
@@ -53,7 +57,7 @@ static inline void	main_routine(t_philo *p)
 				mt_put(p, \
 (int)get_time(*p->init_time), THINKING, p->mutex[LOG]);
 			else
-				usleep(300);
+				usleep(1000);
 		}
 		if (ph_eat(p, p->init_data[TTO_EAT], &n_eaten) == DONE)
 			break ;
