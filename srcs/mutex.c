@@ -45,12 +45,16 @@ void	mt_put(t_philo *p, int ts, int msg, pthread_mutex_t *mutex)
 int	mt_lock_forks(pthread_mutex_t *l, pthread_mutex_t *r, t_philo *philo)
 {
 	pthread_mutex_lock(l);
+	pthread_mutex_lock(philo->mutex[PHILO]);
 	philo->is_forkmtx[0] = true;
+	pthread_mutex_unlock(philo->mutex[PHILO]);
 	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
 		return (DONE);
 	mt_put(philo, (int)get_time(*philo->init_time), FORK, philo->mutex[LOG]);
 	pthread_mutex_lock(r);
+	pthread_mutex_lock(philo->mutex[PHILO]);
 	philo->is_forkmtx[1] = true;
+	pthread_mutex_unlock(philo->mutex[PHILO]);
 	if (mt_boolean_load(philo->is_running, philo->mutex[SIM]) == false)
 		return (DONE);
 	mt_put(philo, (int)get_time(*philo->init_time), FORK, philo->mutex[LOG]);

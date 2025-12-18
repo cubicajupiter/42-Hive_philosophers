@@ -68,10 +68,12 @@ static int	philo_dead(t_philo *p, t_state *state)
 	pthread_mutex_unlock(p->mutex[PHILO]);
 	if ((int)(get_time(*state->init_time) - last_eaten >= state->init_data[TTO_DIE]))
 	{
+		pthread_mutex_lock(p->mutex[PHILO]);
 		if (p->is_forkmtx[1] == true)
 			pthread_mutex_unlock(p->mutex[R_FORK]);
 		if (p->is_forkmtx[0] == true)
 			pthread_mutex_unlock(p->mutex[L_FORK]);
+		pthread_mutex_unlock(p->mutex[PHILO]);
 		printf("%ld %d %s\n", get_time(*state->init_time), p->no, "died");
 		return (DEAD);
 	}
