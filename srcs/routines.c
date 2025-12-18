@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:45 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/12/15 17:59:24 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/18 15:58:00 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,22 +51,19 @@ static inline void	main_routine(t_philo *p)
 	n_eaten = 0;
 	while (mt_boolean_load(p->is_running, p->mutex[SIM]))
 	{
-		if (p->init_data[N_PHILO] % 2 == 1)
-		{
-			if (!n_eaten)
-				mt_put(p, \
-(int)get_time(*p->init_time), THINKING, p->mutex[LOG]);
-			else
-				ph_idle(p, \
-(p->init_data[TTO_EAT] * 2000) - (p->init_data[TTO_SLEEP] * 1000), THINKING);
-		}
-		if (ph_eat(p, p->init_data[TTO_EAT], &n_eaten) == DONE)
-			break ;
 		if (n_eaten == p->init_data[N_EAT])
 		{
 			mt_boolean_store(&p->is_full, true, p->mutex[PHILO]);
 			break ;
 		}
+		if (!n_eaten && p->no % 2 == 1)
+			mt_put(p, \
+(int)get_time(*p->init_time), THINKING, p->mutex[LOG]);
+		if (n_eaten && p->init_data[N_PHILO] % 2 == 1)
+			ph_idle(p, \
+(p->init_data[TTO_EAT] * 2000) - (p->init_data[TTO_SLEEP] * 1000), THINKING);
+		if (ph_eat(p, p->init_data[TTO_EAT], &n_eaten) == DONE)
+			break ;
 		if (ph_idle(p, p->init_data[TTO_SLEEP], SLEEPING) == DONE)
 			break ;
 		if (ph_idle(p, 0, THINKING) == DONE)

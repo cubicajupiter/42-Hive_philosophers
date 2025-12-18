@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   monitor.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: jvalkama <jvalkama@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 11:43:31 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/12/01 14:17:00 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/18 15:44:20 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,19 +61,13 @@ static inline void	check_death(t_state *state, bool *is_running)
 
 static int	philo_dead(t_philo *p, t_state *state)
 {
-	int64_t			last_eaten;
+	int64_t			eaten;
 
 	pthread_mutex_lock(p->mutex[PHILO]);
-	last_eaten = p->last_eaten;
+	eaten = p->last_eaten;
 	pthread_mutex_unlock(p->mutex[PHILO]);
-	if ((int)(get_time(*state->init_time) - last_eaten >= state->init_data[TTO_DIE]))
+	if ((int)(get_time(*state->init_time) - eaten >= state->init_data[TTO_DIE]))
 	{
-		pthread_mutex_lock(p->mutex[PHILO]);
-		if (p->is_forkmtx[1] == true)
-			pthread_mutex_unlock(p->mutex[R_FORK]);
-		if (p->is_forkmtx[0] == true)
-			pthread_mutex_unlock(p->mutex[L_FORK]);
-		pthread_mutex_unlock(p->mutex[PHILO]);
 		printf("%ld %d %s\n", get_time(*state->init_time), p->no, "died");
 		return (DEAD);
 	}
@@ -91,10 +85,12 @@ static inline void	check_log(t_state *state)
 	pthread_mutex_unlock(state->mt_log);
 	while (data != EMPTY)
 	{
+		pthread_mutex_lock(state->mt_log);
 		put_log(state->queue[head]);
 		state->queue[head][0] = 0;
 		state->queue[head][1] = 0;
 		state->queue[head][2] = 0;
+		pthread_mutex_unlock(state->mt_log);
 		head = (state->q_head_idx + 1) % 2000;
 		state->q_head_idx = head;
 		pthread_mutex_lock(state->mt_log);

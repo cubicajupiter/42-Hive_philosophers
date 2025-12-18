@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jvalkama <jvalkama@student.hive.fi>        +#+  +:+       +#+         #
+#    By: jvalkama <jvalkama@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/11/18 12:06:00 by jvalkama          #+#    #+#              #
-#    Updated: 2025/12/01 13:48:07 by jvalkama         ###   ########.fr        #
+#    Updated: 2025/12/18 16:06:34 by jvalkama         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ OBJDIR			:=objs
 OBJS			:=$(addprefix $(OBJDIR)/, $(SRCS:.c=.o))
 
 COMPILER		:=cc
-CFLAGS			:=-Wall -Wextra -Werror -O3 -march=native -pthread -g
+CFLAGS			:=-Wall -Wextra -Werror -O3 -march=native -pthread
 
 INC_DIR			:=includes
 INCLUDES		:=-I $(INC_DIR)

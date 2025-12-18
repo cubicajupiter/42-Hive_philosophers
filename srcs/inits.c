@@ -96,7 +96,6 @@ static void	init_philomtx(t_state *state, const int i, int n_philo)
 	state->philos[i].mutex[PHILO] = malloc(sizeof(pthread_mutex_t));
 	if (state->philos[i].mutex[PHILO] == NULL)
 		clean(state, MAL_ERR, (int []){i, MT_INIT});
-		
 }
 
 static uint8_t	init_mutexes(t_state *state)
