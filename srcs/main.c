@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/08 09:40:23 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/12/15 17:59:23 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/19 13:54:46 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,15 +76,22 @@ static void	cleanup_state(t_state *state)
 static void	destroy_mutexes(t_state *state, int ph_count)
 {
 	int		i;
+	int		j;
 
 	i = ph_count - 1;
 	while (i >= 0)
 	{
 		pthread_mutex_destroy(&state->forks[i]);
 		pthread_mutex_destroy(state->philos[i].mutex[PHILO]);
-		free(state->philos[i].mutex[PHILO]);
 		i--;
 	}
+	j = 0;
+	while (j < state->init_data[N_PHILO])
+	{
+		free(state->philos[j].mutex[PHILO]);
+		j++;
+	}
+	free(state->philos[i].mutex[PHILO]);
 	if (i-- >= -2)
 		pthread_mutex_destroy(state->mt_sim);
 	if (i-- >= -2)

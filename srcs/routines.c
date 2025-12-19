@@ -6,7 +6,7 @@
 /*   By: jvalkama <jvalkama@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 12:12:45 by jvalkama          #+#    #+#             */
-/*   Updated: 2025/12/18 15:58:00 by jvalkama         ###   ########.fr       */
+/*   Updated: 2025/12/19 13:54:29 by jvalkama         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,9 +77,11 @@ static void	*ph_solo(t_philo *p)
 
 	timestamp = get_time(*p->init_time);
 	pthread_mutex_lock(p->mutex[L_FORK]);
+	pthread_mutex_lock(p->mutex[LOG]);
 	printf("%ld %d %s\n", timestamp, p->no, "has taken a fork");
+	pthread_mutex_unlock(p->mutex[LOG]);
 	usleep(p->init_data[TTO_DIE] * 1000);
-	timestamp = get_time(*p->init_time);
+	pthread_mutex_unlock(p->mutex[L_FORK]);
 	return (NULL);
 }
 
